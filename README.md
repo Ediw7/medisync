@@ -72,7 +72,8 @@ echo "Semua dependensi berhasil di-install!"
 
 Untuk bekerja secara penuh, kita perlu menjalankan ketiga komponen aplikasi secara bersamaan. Ini membutuhkan 3 jendela terminal yang berjalan secara paralel.
 
-Terminal 1: Menjalankan Jaringan Hyperledger Fabric
+#### Terminal 1: Menjalankan Jaringan Hyperledger Fabric
+
 Jaringan ini adalah fondasi dari segalanya dan harus dijalankan pertama kali.
 
 
@@ -82,7 +83,8 @@ Dari direktori root proyek (medisync-project)
 
 Proses ini akan memakan waktu beberapa menit. Ia akan membuat semua kontainer Docker (peer, orderer), membuat channel, dan men-deploy chaincode. Biarkan terminal ini tetap berjalan di background.
 
-Terminal 2: Menjalankan Server Backend
+#### Terminal 2: Menjalankan Server Backend
+
 Server ini akan menghubungkan frontend ke blockchain.
 
 
@@ -96,7 +98,8 @@ node server.js
 
 Anda akan melihat pesan Server is running on http://localhost:3001. Biarkan terminal ini tetap berjalan.
 
-Terminal 3: Menjalankan Aplikasi Frontend
+#### Terminal 3: Menjalankan Aplikasi Frontend
+
 Ini adalah antarmuka pengguna yang akan kita lihat di browser.
 
 Bash
@@ -120,7 +123,8 @@ Ini adalah bagian terpenting untuk kerja tim agar tidak terjadi konflik kode. Pr
 Siklus Kerja: Studi Kasus Developer Frontend
 Skenario: Anda adalah developer frontend, tugas Anda adalah "mengubah tombol 'Cari' menjadi warna hijau".
 
-Langkah A: Sinkronisasi Kode
+#### Langkah A: Sinkronisasi Kode
+
 Pastikan kode di komputer Anda adalah versi terbaru dari main di GitHub.
 
 // Pindah ke branch utama
@@ -131,18 +135,21 @@ git checkout main
 
 git pull origin main
 
-Langkah B: Buat Branch Baru
+#### Langkah B: Buat Branch Baru
+
 Buat "ruang kerja" baru yang terisolasi khusus untuk tugas ini.
 
 //Buat branch baru dan langsung pindah ke dalamnya
 
 git checkout -b frontend/style-tombol-cari
 
-Langkah C: Bekerja & Test
+#### Langkah C: Bekerja & Test
+
 Lakukan perubahan pada kode (misalnya di file frontend/src/App.css). Simpan, lalu test secara lokal untuk memastikan semuanya berfungsi.
 
 
-Langkah D: Commit Perubahan
+#### Langkah D: Commit Perubahan
+
 Simpan "snapshot" dari pekerjaan Anda ke dalam riwayat Git.
 
 1. Tambahkan file yang telah Anda ubah
@@ -153,13 +160,14 @@ git add .
 
 git commit -m "style(frontend): Mengubah warna tombol 'Cari' menjadi hijau"
 
-Langkah E: Push Branch ke GitHub
+#### Langkah E: Push Branch ke GitHub
 
 Kirim branch baru Anda beserta commit-nya ke repositori pusat di GitHub.
 
 git push
 
-Langkah F: Buat Pull Request (PR)
+#### Langkah F: Buat Pull Request (PR)
+
 Ini adalah cara Anda mengajukan hasil kerja Anda untuk digabungkan ke main.
 
 Buka halaman repositori proyek di GitHub.
@@ -170,7 +178,8 @@ Beri judul dan deskripsi yang jelas untuk PR Anda.
 
 Di sebelah kanan, pilih "Reviewers" dan tambahkan Ketua Tim.
 
-Langkah H: Kembali ke Awal
+#### Langkah G: Kembali ke Awal
+
 Pekerjaan Anda selesai! Sekarang, kembali ke terminal untuk bersiap mengerjakan tugas selanjutnya.
 
 // 1. Pindah lagi ke branch utama
@@ -207,26 +216,26 @@ Frontend (di App.jsx) akan berkomunikasi dengan API backend.
 
 Membangun ulang seluruh jaringan dari nol (paling sering digunakan)
 
-# ./network.sh restart
+#### ./network.sh restart
 
 Mematikan semua kontainer jaringan
 
-# ./network.sh down
+#### ./network.sh down
 
 Men-deploy atau meng-upgrade chaincode (setelah ada perubahan kode chaincode)
 
-# ./network.sh deployCC
+#### ./network.sh deployCC
 
 Melihat semua kontainer Docker yang berjalan
 
-# docker ps -a
+#### docker ps -a
 
 Menjalankan server backend
 (jalankan dari dalam folder 'backend')
 
-# node server.js
+#### node server.js
 
 Menjalankan server frontend
 (jalankan dari dalam folder 'frontend')
 
-# npm run dev
+#### npm run dev
