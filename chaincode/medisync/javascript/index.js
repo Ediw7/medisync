@@ -1,6 +1,13 @@
 'use strict';
 
-const medisyncContract = require('./lib/medisync');
+const ProdusenContract = require('./lib/produsenContract');
+const PbfContract = require('./lib/pbfContract');
+const ApotekContract = require('./lib/apotekContract');
+const KonsumenContract = require('./lib/konsumenContract');
 
-module.exports.MedisyncContract = medisyncContract;
-module.exports.contracts = [medisyncContract];
+module.exports.contracts = [
+    ProdusenContract,
+    PbfContract,
+    ApotekContract,
+    KonsumenContract
+];

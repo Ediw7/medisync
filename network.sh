@@ -10,8 +10,8 @@ export CHANNEL_NAME="medisyncchannel"
 export CC_NAME="medisync"
 export CC_SRC_PATH="./chaincode/medisync/javascript/"
 # Ubah baris ini
-export CC_VERSION="1.1"
-export CC_SEQUENCE="2"
+export CC_VERSION="2.0"
+export CC_SEQUENCE="4"
 
 
 # Fungsi untuk membersihkan lingkungan
