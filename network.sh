@@ -10,14 +10,14 @@ export CHANNEL_NAME="medisyncchannel"
 export CC_NAME="medisync"
 export CC_SRC_PATH="./chaincode/medisync/javascript/"
 # Ubah baris ini
-export CC_VERSION="2.0"
-export CC_SEQUENCE="4"
+export CC_VERSION="1.0"
+export CC_SEQUENCE="1"
 
 
 # Fungsi untuk membersihkan lingkungan
 function clearContainers() {
   echo "========== Menghapus kontainer-kontainer lama... =========="
-  docker-compose -f $COMPOSE_FILE_BASE down --volumes --remove-orphans
+  docker compose -f $COMPOSE_FILE_BASE down --volumes --remove-orphans
 
   
   LINGERING_CONTAINERS=$(docker ps -aq --filter "name=medisync")
@@ -76,7 +76,7 @@ function networkUp() {
     createGenesisBlock
     
     echo "========== Menjalankan Jaringan Docker (6 peer)... =========="
-    docker-compose -f $COMPOSE_FILE_BASE up -d
+    docker compose -f $COMPOSE_FILE_BASE up -d
     docker ps -a
     echo "========== Jaringan Docker berhasil berjalan =========="
 }
