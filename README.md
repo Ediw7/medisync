@@ -69,6 +69,7 @@ cd ..
 echo "Semua dependensi berhasil di-install!"
 
 ## 3. Menjalankan Lingkungan Pengembangan Lokal
+
 Untuk bekerja secara penuh, kita perlu menjalankan ketiga komponen aplikasi secara bersamaan. Ini membutuhkan 3 jendela terminal yang berjalan secara paralel.
 
 Terminal 1: Menjalankan Jaringan Hyperledger Fabric
@@ -78,6 +79,7 @@ Jaringan ini adalah fondasi dari segalanya dan harus dijalankan pertama kali.
 Dari direktori root proyek (medisync-project)
 
 ./network.sh restart
+
 Proses ini akan memakan waktu beberapa menit. Ia akan membuat semua kontainer Docker (peer, orderer), membuat channel, dan men-deploy chaincode. Biarkan terminal ini tetap berjalan di background.
 
 Terminal 2: Menjalankan Server Backend
@@ -100,10 +102,13 @@ Ini adalah antarmuka pengguna yang akan kita lihat di browser.
 Bash
 
 Dari direktori root proyek (medisync-project)
+
 cd frontend
 
 Jalankan server pengembangan Vite
+
 npm run dev
+
 Anda akan melihat pesan yang memberikan URL, biasanya http://localhost:5173.
 
 Selesai!
