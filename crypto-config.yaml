@@ -18,7 +18,7 @@ PeerOrgs:
     Domain: org1.medisync.com
     EnableNodeOUs: true
     Template:
-      Count: 2 # <-- UBAH: dari 1 menjadi 2
+      Count: 2
       SANS:
         - localhost
     Users:
@@ -29,7 +29,7 @@ PeerOrgs:
     Domain: org2.medisync.com
     EnableNodeOUs: true
     Template:
-      Count: 2 # <-- UBAH: dari 1 menjadi 2
+      Count: 2
       SANS:
         - localhost
     Users:
@@ -40,7 +40,7 @@ PeerOrgs:
     Domain: org3.medisync.com
     EnableNodeOUs: true
     Template:
-      Count: 2 # <-- UBAH: dari 1 menjadi 2
+      Count: 2
       SANS:
         - localhost
     Users:

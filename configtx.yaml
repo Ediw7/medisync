@@ -135,7 +135,7 @@ Orderer: &OrdererDefaults
         BlockValidation:
             Type: ImplicitMeta
             Rule: "ANY Writers"
-    # --- AKHIR BLOK YANG DIPERBAIKI ---
+
 
 Channel: &ChannelDefaults
     Policies:

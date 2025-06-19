@@ -62,7 +62,7 @@ services:
     networks:
       - medisync-net
 
-  peer1.org1.medisync.com: # <-- SERVICE BARU UNTUK PEER 1
+  peer1.org1.medisync.com: 
     container_name: peer1.org1.medisync.com
     image: hyperledger/fabric-peer:2.5.13
     environment:
@@ -71,12 +71,12 @@ services:
       - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_ID=peer1.org1.medisync.com
-      - CORE_PEER_ADDRESS=peer1.org1.medisync.com:8051 # Port baru
-      - CORE_PEER_LISTENADDRESS=0.0.0.0:8051 # Port baru
-      - CORE_PEER_CHAINCODEADDRESS=peer1.org1.medisync.com:8052 # Port baru
-      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052 # Port baru
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.medisync.com:7051 # Arahkan gossip ke peer0
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.medisync.com:8051 # Gunakan port sendiri
+      - CORE_PEER_ADDRESS=peer1.org1.medisync.com:8051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:8051 
+      - CORE_PEER_CHAINCODEADDRESS=peer1.org1.medisync.com:8052 
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052 
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.medisync.com:7051 
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.medisync.com:8051 
       - CORE_PEER_LOCALMSPID=ProdusenMSP
     volumes:
       - /var/run/:/host/var/run/
@@ -84,7 +84,7 @@ services:
       - ./organizations/peerOrganizations/org1.medisync.com/peers/peer1.org1.medisync.com/tls:/etc/hyperledger/fabric/tls # Path sertifikat untuk peer1
     command: peer node start
     ports:
-      - 8051:8051 # Mapping port baru
+      - 8051:8051
     networks:
       - medisync-net
 
@@ -115,7 +115,7 @@ services:
     networks:
       - medisync-net
 
-  peer1.org2.medisync.com: # <-- SERVICE BARU UNTUK PEER 1
+  peer1.org2.medisync.com:
     container_name: peer1.org2.medisync.com
     image: hyperledger/fabric-peer:2.5.13
     environment:
@@ -124,12 +124,12 @@ services:
       - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_ID=peer1.org2.medisync.com
-      - CORE_PEER_ADDRESS=peer1.org2.medisync.com:10051 # Port baru
-      - CORE_PEER_LISTENADDRESS=0.0.0.0:10051 # Port baru
-      - CORE_PEER_CHAINCODEADDRESS=peer1.org2.medisync.com:10052 # Port baru
-      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:10052 # Port baru
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.medisync.com:9051 # Arahkan gossip ke peer0
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org2.medisync.com:10051 # Gunakan port sendiri
+      - CORE_PEER_ADDRESS=peer1.org2.medisync.com:10051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:10051 
+      - CORE_PEER_CHAINCODEADDRESS=peer1.org2.medisync.com:10052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:10052 
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.medisync.com:9051 
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org2.medisync.com:10051 
       - CORE_PEER_LOCALMSPID=PBFMSP
     volumes:
       - /var/run/:/host/var/run/
@@ -137,7 +137,7 @@ services:
       - ./organizations/peerOrganizations/org2.medisync.com/peers/peer1.org2.medisync.com/tls:/etc/hyperledger/fabric/tls # Path sertifikat untuk peer1
     command: peer node start
     ports:
-      - 10051:10051 # Mapping port baru
+      - 10051:10051 
     networks:
       - medisync-net
 
@@ -168,7 +168,7 @@ services:
     networks:
       - medisync-net
 
-  peer1.org3.medisync.com: # <-- SERVICE BARU UNTUK PEER 1
+  peer1.org3.medisync.com:
     container_name: peer1.org3.medisync.com
     image: hyperledger/fabric-peer:2.5.13
     environment:
@@ -177,12 +177,12 @@ services:
       - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_ID=peer1.org3.medisync.com
-      - CORE_PEER_ADDRESS=peer1.org3.medisync.com:12051 # Port baru
-      - CORE_PEER_LISTENADDRESS=0.0.0.0:12051 # Port baru
-      - CORE_PEER_CHAINCODEADDRESS=peer1.org3.medisync.com:12052 # Port baru
-      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:12052 # Port baru
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org3.medisync.com:11051 # Arahkan gossip ke peer0
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org3.medisync.com:12051 # Gunakan port sendiri
+      - CORE_PEER_ADDRESS=peer1.org3.medisync.com:12051 
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:12051 
+      - CORE_PEER_CHAINCODEADDRESS=peer1.org3.medisync.com:12052 
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:12052 
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org3.medisync.com:11051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org3.medisync.com:12051 
       - CORE_PEER_LOCALMSPID=ApotekMSP
     volumes:
       - /var/run/:/host/var/run/
@@ -190,7 +190,7 @@ services:
       - ./organizations/peerOrganizations/org3.medisync.com/peers/peer1.org3.medisync.com/tls:/etc/hyperledger/fabric/tls # Path sertifikat untuk peer1
     command: peer node start
     ports:
-      - 12051:12051 # Mapping port baru
+      - 12051:12051
     networks:
       - medisync-net
       
@@ -207,7 +207,6 @@ services:
       - CORE_PEER_ADDRESS=peer0.org1.medisync.com:7051
       - CORE_PEER_LOCALMSPID=ProdusenMSP
       - CORE_PEER_TLS_ENABLED=true
-      # --- TAMBAHKAN BARIS DI BAWAH INI ---
       - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.medisync.com/peers/peer0.org1.medisync.com/tls/ca.crt
       - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.medisync.com/users/Admin@org1.medisync.com/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer

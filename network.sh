@@ -17,17 +17,16 @@ export CC_SEQUENCE="2"
 # Fungsi untuk membersihkan lingkungan
 function clearContainers() {
   echo "========== Menghapus kontainer-kontainer lama... =========="
-  # Hentikan dan hapus kontainer yang didefinisikan di docker-compose
   docker-compose -f $COMPOSE_FILE_BASE down --volumes --remove-orphans
 
-  # Perintah tambahan untuk membersihkan sisa kontainer medisync secara paksa
+  
   LINGERING_CONTAINERS=$(docker ps -aq --filter "name=medisync")
   if [ -n "$LINGERING_CONTAINERS" ]; then
     echo "Membersihkan sisa kontainer medisync yang mungkin masih ada..."
     docker rm -f $LINGERING_CONTAINERS >/dev/null 2>&1
   fi
 
-  # Hapus juga chaincode container yang mungkin masih ada
+  
   docker rm -f $(docker ps -a | grep "dev-peer" | awk '{print $1}') >/dev/null 2>&1 || true
   echo "========== Kontainer lama berhasil dihapus =========="
 }
@@ -71,7 +70,7 @@ function createGenesisBlock() {
 
 # Fungsi untuk menjalankan jaringan
 function networkUp() {
-    # Panggil fungsi unduh yang sudah benar
+    
     downloadFabricBinaries
     generateCrypto
     createGenesisBlock
@@ -144,7 +143,6 @@ function updateAnchorPeers() {
 }
 
 # Fungsi untuk deploy chaincode
-# Fungsi untuk deploy chaincode
 function deployCC() {
     echo "========== Deploy Chaincode... =========="
     # Package
@@ -172,8 +170,7 @@ function deployCC() {
             fi
 
             echo "--- Menginstall di peer${peer}.org${org}.medisync.com (sebagai admin Org${org}) ---"
-            
-            # PERBAIKAN UTAMA: Set semua variabel env agar CLI bertindak sebagai admin org yang tepat
+        
             docker exec \
               -e CORE_PEER_LOCALMSPID=$MSP \
               -e CORE_PEER_TLS_ROOTCERT_FILE="/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org${org}.medisync.com/peers/peer${peer}.org${org}.medisync.com/tls/ca.crt" \
@@ -236,7 +233,7 @@ elif [ "$1" == "restart" ]; then
   removeOldArtifacts
   networkUp
   echo "Menunggu 10 detik agar orderer siap..."
-  sleep 10 # <-- TAMBAHKAN JEDA WAKTU DI SINI
+  sleep 10 
   createChannel
   deployCC
 elif [ "$1" == "createChannel" ]; then
