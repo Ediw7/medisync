@@ -115,38 +115,71 @@ Selesai!
 Sekarang Anda bisa membuka http://localhost:5173 di browser Anda untuk melihat dan berinteraksi dengan aplikasi MediSync.
 
 ## 4. Alur Kerja Pengembangan (Wajib Diikuti)
+Ini adalah bagian terpenting untuk kerja tim agar tidak terjadi konflik kode. Prinsip utamanya adalah: JANGAN PERNAH BEKERJA LANGSUNG DI BRANCH main.
 
-Kita menggunakan alur kerja Feature Branch dengan Pull Request di GitHub.
+Siklus Kerja: Studi Kasus Developer Frontend
+Skenario: Anda adalah developer frontend, tugas Anda adalah "mengubah tombol 'Cari' menjadi warna hijau".
 
-Sinkronisasi: Sebelum mulai, selalu update branch main Anda.
+Langkah A: Sinkronisasi Kode
+Pastikan kode di komputer Anda adalah versi terbaru dari main di GitHub.
+
+// Pindah ke branch utama
 
 git checkout main
 
+// Ambil perubahan terbaru dari GitHub
+
 git pull origin main
 
-Buat Branch Baru: Buat "cabang" baru yang spesifik untuk setiap fitur atau perbaikan. Jangan pernah bekerja langsung di branch main.
+Langkah B: Buat Branch Baru
+Buat "ruang kerja" baru yang terisolasi khusus untuk tugas ini.
 
-# Contoh nama branch yang baik: feature/login-user
+//Buat branch baru dan langsung pindah ke dalamnya
 
-git checkout -b <nama-branch-anda>
+git checkout -b frontend/style-tombol-cari
 
-Bekerja & Commit: Lakukan perubahan kode. Lakukan commit secara berkala dengan pesan yang jelas.
+Langkah C: Bekerja & Test
+Lakukan perubahan pada kode (misalnya di file frontend/src/App.css). Simpan, lalu test secara lokal untuk memastikan semuanya berfungsi.
 
 
+Langkah D: Commit Perubahan
+Simpan "snapshot" dari pekerjaan Anda ke dalam riwayat Git.
 
+1. Tambahkan file yang telah Anda ubah
+2. 
 git add .
 
-git commit -m "feat: Menambahkan halaman login"
+2. Buat catatan permanen (commit) dengan pesan yang jelas
 
-Push ke GitHub: Push branch Anda ke repositori pusat.
+git commit -m "style(frontend): Mengubah warna tombol 'Cari' menjadi hijau"
 
+Langkah E: Push Branch ke GitHub
 
-git push origin <nama-branch-anda>
+Kirim branch baru Anda beserta commit-nya ke repositori pusat di GitHub.
 
-Buat Pull Request (PR): Buka repositori di GitHub dan buat Pull Request dari branch Anda ke branch main. Beri judul dan deskripsi yang jelas
+git push
 
+Langkah F: Buat Pull Request (PR)
+Ini adalah cara Anda mengajukan hasil kerja Anda untuk digabungkan ke main.
 
-Review & Merge: Setelah PR direview dan disetujui, akan me-merge PR tersebut ke main.
+Buka halaman repositori proyek di GitHub.
+
+Anda akan melihat notifikasi tentang branch baru Anda. Klik tombol "Compare & pull request".
+
+Beri judul dan deskripsi yang jelas untuk PR Anda.
+
+Di sebelah kanan, pilih "Reviewers" dan tambahkan Ketua Tim.
+
+Langkah H: Kembali ke Awal
+Pekerjaan Anda selesai! Sekarang, kembali ke terminal untuk bersiap mengerjakan tugas selanjutnya.
+
+// 1. Pindah lagi ke branch utama
+
+git checkout main
+
+// 2. Ambil lagi versi terbaru (yang sekarang sudah berisi perubahan Anda)
+
+git pull origin main
 
 
 ## 5. Panduan Spesifik Berdasarkan Peran
