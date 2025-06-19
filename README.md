@@ -34,6 +34,7 @@ Ini adalah langkah-langkah yang perlu dilakukan setiap anggota tim saat pertama 
 Buka terminal dan clone repositori ini dari GitHub ke komputer lokal Anda.
 
 git clone https://github.com/Ediw7/medisync.git
+
 cd medisync-project
 
 
