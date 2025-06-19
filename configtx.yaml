@@ -1,0 +1,179 @@
+---
+Organizations:
+    - &OrdererOrg
+        Name: OrdererMSP
+        ID: OrdererMSP
+        MSPDir: organizations/ordererOrganizations/medisync.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OrdererMSP.admin')"
+
+    - &Produsen
+        Name: ProdusenMSP
+        ID: ProdusenMSP
+        MSPDir: organizations/peerOrganizations/org1.medisync.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('ProdusenMSP.admin', 'ProdusenMSP.peer', 'ProdusenMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('ProdusenMSP.admin', 'ProdusenMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('ProdusenMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('ProdusenMSP.peer')"
+        AnchorPeers:
+            - Host: peer0.org1.medisync.com
+              Port: 7051
+
+    - &PBF
+        Name: PBFMSP
+        ID: PBFMSP
+        MSPDir: organizations/peerOrganizations/org2.medisync.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('PBFMSP.admin', 'PBFMSP.peer', 'PBFMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('PBFMSP.admin', 'PBFMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('PBFMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('PBFMSP.peer')"
+        AnchorPeers:
+            - Host: peer0.org2.medisync.com
+              Port: 9051
+
+    - &Apotek
+        Name: ApotekMSP
+        ID: ApotekMSP
+        MSPDir: organizations/peerOrganizations/org3.medisync.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('ApotekMSP.admin', 'ApotekMSP.peer', 'ApotekMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('ApotekMSP.admin', 'ApotekMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('ApotekMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('ApotekMSP.peer')"
+        AnchorPeers:
+            - Host: peer0.org3.medisync.com
+              Port: 11051
+
+Capabilities:
+    Channel: &ChannelCapabilities
+        V2_0: true
+    Orderer: &OrdererCapabilities
+        V2_0: true
+    Application: &ApplicationCapabilities
+        V2_0: true
+
+Application: &ApplicationDefaults
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        LifecycleEndorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+        Endorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+
+Orderer: &OrdererDefaults
+    OrdererType: etcdraft
+    EtcdRaft:
+        Consenters:
+            - Host: orderer.medisync.com
+              Port: 7050
+              ClientTLSCert: organizations/ordererOrganizations/medisync.com/orderers/orderer.medisync.com/tls/server.crt
+              ServerTLSCert: organizations/ordererOrganizations/medisync.com/orderers/orderer.medisync.com/tls/server.crt
+    Addresses:
+        - orderer.medisync.com:7050
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+    Organizations:
+    # --- BLOK KEBIJAKAN YANG DIPERBAIKI ---
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+    # --- AKHIR BLOK YANG DIPERBAIKI ---
+
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ChannelCapabilities
+
+Profiles:
+    MediSyncOrdererGenesis:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            MediSyncConsortium:
+                Organizations:
+                    - *Produsen
+                    - *PBF
+                    - *Apotek
+    MediSyncChannel:
+        Consortium: MediSyncConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Produsen
+                - *PBF
+                - *Apotek
+            Capabilities:
+                <<: *ApplicationCapabilities

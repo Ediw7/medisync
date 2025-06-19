@@ -1,0 +1,69 @@
+{
+    "name": "medisync-network-org1",
+    "version": "1.0.0",
+    "client": {
+        "organization": "Produsen",
+        "connection": {
+            "timeout": {
+                "peer": {
+                    "endorser": "300"
+                }
+            }
+        }
+    },
+    "channels": {
+        "medisyncchannel": {
+            "orderers": [
+                "orderer.medisync.com"
+            ],
+            "peers": {
+                "peer0.org1.medisync.com": {}
+            }
+        }
+    },
+    "organizations": {
+        "Produsen": {
+            "mspid": "ProdusenMSP",
+            "peers": [
+                "peer0.org1.medisync.com"
+            ],
+            "certificateAuthorities": [
+                "ca.org1.medisync.com" 
+            ]
+        }
+    },
+    "orderers": {
+        "orderer.medisync.com": {
+            "url": "grpcs://localhost:7050",
+            "grpcOptions": {
+                "ssl-target-name-override": "orderer.medisync.com"
+            },
+            "tlsCACerts": {
+                "path": "../organizations/ordererOrganizations/medisync.com/tlsca/tlsca.medisync.com-cert.pem"
+            }
+        }
+    },
+    "peers": {
+        "peer0.org1.medisync.com": {
+            "url": "grpcs://localhost:7051",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.org1.medisync.com"
+            },
+            "tlsCACerts": {
+                "path": "../organizations/peerOrganizations/org1.medisync.com/tlsca/tlsca.org1.medisync.com-cert.pem"
+            }
+        }
+    },
+    "certificateAuthorities": {
+        "ca.org1.medisync.com": {
+            "url": "https://localhost:7054",
+            "caName": "ca-org1",
+            "tlsCACerts": {
+                "path": "../organizations/peerOrganizations/org1.medisync.com/tlsca/tlsca.org1.medisync.com-cert.pem"
+            },
+            "httpOptions": {
+                "verify": false
+            }
+        }
+    }
+}

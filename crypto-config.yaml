@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# "crypto-config.yaml"
+# ---------------------------------------------------------------------------
+# Konfigurasi untuk Orderer
+OrdererOrgs:
+  - Name: Orderer
+    Domain: medisync.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+        SANS:
+          - localhost
+
+# Konfigurasi untuk Peer
+PeerOrgs:
+  # Organisasi 1: Produsen
+  - Name: Produsen
+    Domain: org1.medisync.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2 # <-- UBAH: dari 1 menjadi 2
+      SANS:
+        - localhost
+    Users:
+      Count: 1 
+
+  # Organisasi 2: PBF
+  - Name: PBF
+    Domain: org2.medisync.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2 # <-- UBAH: dari 1 menjadi 2
+      SANS:
+        - localhost
+    Users:
+      Count: 1
+
+  # Organisasi 3: Apotek
+  - Name: Apotek
+    Domain: org3.medisync.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2 # <-- UBAH: dari 1 menjadi 2
+      SANS:
+        - localhost
+    Users:
+      Count: 1
