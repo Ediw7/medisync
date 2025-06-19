@@ -83,6 +83,18 @@ Dari direktori root proyek (medisync-project)
 
 Proses ini akan memakan waktu beberapa menit. Ia akan membuat semua kontainer Docker (peer, orderer), membuat channel, dan men-deploy chaincode. Biarkan terminal ini tetap berjalan di background.
 
+Selanjutnya, jalankan skrip persetujuan manual dari folder 'scripts'.
+
+./scripts/0_query_installed.sh
+
+./scripts/1_approve_produsen.sh
+
+./scripts/2_approve_pbf.sh
+
+./scripts/3_approve_apotek.sh
+
+./scripts/4_commit.sh
+
 #### Terminal 2: Menjalankan Server Backend
 
 Server ini akan menghubungkan frontend ke blockchain.
