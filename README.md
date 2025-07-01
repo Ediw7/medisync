@@ -241,7 +241,7 @@ git pull origin main
 - **Backend** (`server.js`) ↔ Blockchain
 - **Frontend** (`App.jsx`) ↔ API Backend
 
-## 📋 6. Perintah-Perintah Penting (Cheat Sheet)
+## 6. Perintah-Perintah Penting (Cheat Sheet)
 
 ### Perintah Umum
 | Tujuan | Perintah | Catatan |
