@@ -230,13 +230,9 @@ Membangun ulang seluruh jaringan dari nol (paling sering digunakan)
 
 #### ./network.sh restart
 
-Mematikan semua kontainer jaringan
-
-#### ./network.sh down
-
 Men-deploy atau meng-upgrade chaincode (setelah ada perubahan kode chaincode)
 
-#### ./network.sh deployCC
+#### ./network.sh upgrade
 
 Melihat semua kontainer Docker yang berjalan
 
