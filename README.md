@@ -33,22 +33,25 @@ Ini adalah langkah-langkah yang perlu dilakukan setiap anggota tim saat pertama 
 
 Buka terminal dan clone repositori ini dari GitHub ke komputer lokal Anda.
 
+```bash
 git clone https://github.com/Ediw7/medisync.git
-
 cd medisync-project
+```
 
 
 ### Langkah 2.2: Konfigurasi Identitas Git
 Jika ini pertama kalinya Anda menggunakan Git di komputer ini, konfigurasikan nama dan email Anda. Gunakan email yang sama dengan akun GitHub Anda.
 
+```bash
 git config --global user.name "usernmae"
 git config --global user.email "emailanda@example.com"
-
+```
 
 ### Langkah 2.3: Install Dependencies
 Proyek ini memiliki dua set dependensi Node.js: satu untuk backend dan satu untuk frontend. Kita perlu menginstall keduanya.
 
 # Install dependensi untuk Backend
+```bash
 echo "Menginstall dependensi backend..."
 
 cd backend
@@ -56,8 +59,10 @@ cd backend
 npm install
 
 cd ..
+```
 
 # Install dependensi untuk Frontend
+```bash
 echo "Menginstall dependensi frontend..."
 
 cd frontend
@@ -67,6 +72,7 @@ npm install
 cd ..
 
 echo "Semua dependensi berhasil di-install!"
+```
 
 ## 3. Menjalankan Lingkungan Pengembangan Lokal
 
@@ -78,12 +84,14 @@ Jaringan ini adalah fondasi dari segalanya dan harus dijalankan pertama kali.
 
 
 Dari direktori root proyek (medisync-project)
-
+```bash
 ./network.sh restart
+```
 
 Proses ini akan memakan waktu beberapa menit. Ia akan membuat semua kontainer Docker (peer, orderer), membuat channel, dan men-deploy chaincode. Biarkan terminal ini tetap berjalan di background.
 
 Selanjutnya, jalankan skrip persetujuan manual dari folder 'scripts'.
+```bash
 
 ./scripts/0_query_installed.sh
 
@@ -94,6 +102,7 @@ Selanjutnya, jalankan skrip persetujuan manual dari folder 'scripts'.
 ./scripts/3_approve_apotek.sh
 
 ./scripts/4_commit.sh
+```
 
 #### Terminal 2: Menjalankan Server Backend
 
@@ -101,149 +110,151 @@ Server ini akan menghubungkan frontend ke blockchain.
 
 
 Dari direktori root proyek (medisync-project)
-
+```bash
 cd backend
+```
 
 Jalankan server
-
+```bash
 node server.js
+```
 
-Anda akan melihat pesan Server is running on http://localhost:3001. Biarkan terminal ini tetap berjalan.
+Anda akan melihat pesan Server is running on `http://localhost:3001`. Biarkan terminal ini tetap berjalan.
 
 #### Terminal 3: Menjalankan Aplikasi Frontend
 
 Ini adalah antarmuka pengguna yang akan kita lihat di browser.
 
-Bash
-
 Dari direktori root proyek (medisync-project)
-
+```bash
 cd frontend
+```
 
 Jalankan server pengembangan Vite
-
+```bash
 npm run dev
+```
 
-Anda akan melihat pesan yang memberikan URL, biasanya http://localhost:5173.
+Anda akan melihat pesan yang memberikan URL, biasanya `http://localhost:5173`.
 
 Selesai!
-Sekarang Anda bisa membuka http://localhost:5173 di browser Anda untuk melihat dan berinteraksi dengan aplikasi MediSync.
+Sekarang Anda bisa membuka `http://localhost:5173` di browser Anda untuk melihat dan berinteraksi dengan aplikasi MediSync.
 
 ## 4. Alur Kerja Pengembangan (Wajib Diikuti)
-Ini adalah bagian terpenting untuk kerja tim agar tidak terjadi konflik kode. Prinsip utamanya adalah: JANGAN PERNAH BEKERJA LANGSUNG DI BRANCH main.
 
-Siklus Kerja: Studi Kasus Developer Frontend
-Skenario: Anda adalah developer frontend, tugas Anda adalah "mengubah tombol 'Cari' menjadi warna hijau".
+Ini adalah bagian terpenting untuk kerja tim agar tidak terjadi konflik kode. Prinsip utamanya adalah: **JANGAN PERNAH BEKERJA LANGSUNG DI BRANCH main**.
+
+### Siklus Kerja: Studi Kasus Developer Frontend
+
+**Skenario:** Anda adalah developer frontend, tugas Anda adalah "mengubah tombol 'Cari' menjadi warna hijau".
 
 #### Langkah A: Sinkronisasi Kode
-
 Pastikan kode di komputer Anda adalah versi terbaru dari main di GitHub.
 
-// Pindah ke branch utama
-
+```bash
+# Pindah ke branch utama
 git checkout main
 
-// Ambil perubahan terbaru dari GitHub
-
+# Ambil perubahan terbaru dari GitHub
 git pull origin main
+```
 
 #### Langkah B: Buat Branch Baru
-
 Buat "ruang kerja" baru yang terisolasi khusus untuk tugas ini.
 
-//Buat branch baru dan langsung pindah ke dalamnya
-
+```bash
+# Buat branch baru dan langsung pindah ke dalamnya
 git checkout -b frontend/style-tombol-cari
+```
 
 #### Langkah C: Bekerja & Test
-
-Lakukan perubahan pada kode (misalnya di file frontend/src/App.css). Simpan, lalu test secara lokal untuk memastikan semuanya berfungsi.
-
+Lakukan perubahan pada kode (misalnya di file `frontend/src/App.css`). Simpan, lalu test secara lokal untuk memastikan semuanya berfungsi.
 
 #### Langkah D: Commit Perubahan
-
 Simpan "snapshot" dari pekerjaan Anda ke dalam riwayat Git.
 
-1. Tambahkan file yang telah Anda ubah
-2. 
-git add .
+1. **Tambahkan file yang telah Anda ubah:**
+   ```bash
+   git add .
+   ```
 
-2. Buat catatan permanen (commit) dengan pesan yang jelas
-
-git commit -m "style(frontend): Mengubah warna tombol 'Cari' menjadi hijau"
+2. **Buat catatan permanen (commit) dengan pesan yang jelas:**
+   ```bash
+   git commit -m "style(frontend): Mengubah warna tombol 'Cari' menjadi hijau"
+   ```
 
 #### Langkah E: Push Branch ke GitHub
-
 Kirim branch baru Anda beserta commit-nya ke repositori pusat di GitHub.
 
+```bash
 git push
+```
 
 #### Langkah F: Buat Pull Request (PR)
-
 Ini adalah cara Anda mengajukan hasil kerja Anda untuk digabungkan ke main.
 
-Buka halaman repositori proyek di GitHub.
-
-Anda akan melihat notifikasi tentang branch baru Anda. Klik tombol "Compare & pull request".
-
-Beri judul dan deskripsi yang jelas untuk PR Anda.
-
-Di sebelah kanan, pilih "Reviewers" dan tambahkan Ketua Tim.
+1. Buka halaman repositori proyek di GitHub
+2. Anda akan melihat notifikasi tentang branch baru Anda. Klik tombol "**Compare & pull request**"
+3. Beri judul dan deskripsi yang jelas untuk PR Anda
+4. Di sebelah kanan, pilih "**Reviewers**" dan tambahkan Ketua Tim
 
 #### Langkah G: Kembali ke Awal
-
 Pekerjaan Anda selesai! Sekarang, kembali ke terminal untuk bersiap mengerjakan tugas selanjutnya.
 
-// 1. Pindah lagi ke branch utama
-
+```bash
+# 1. Pindah lagi ke branch utama
 git checkout main
 
-// 2. Ambil lagi versi terbaru (yang sekarang sudah berisi perubahan Anda)
-
+# 2. Ambil lagi versi terbaru (yang sekarang sudah berisi perubahan Anda)
 git pull origin main
-
+```
 
 ## 5. Panduan Spesifik Berdasarkan Peran
-Untuk Developer Chaincode (Fokus: folder chaincode/)
-modifikasi logika bisnis di dalam file chaincode/medisync/javascript/lib/medisync.js.
 
-Setelah selesai dan kode di-merge ke main, lakukan upgrade chaincode dengan cara:
+### Untuk Developer Chaincode (Fokus: folder `chaincode/`)
 
-Mengubah versi di network.sh (misalnya CC_VERSION menjadi "1.2" dan CC_SEQUENCE menjadi "3").
+**Modifikasi Logika Bisnis:**
+- Lakukan perubahan pada file `chaincode/medisync/javascript/lib/medisync.js`
 
-Menjalankan perintah: ./network.sh deployCC.
+**Setelah Merge ke Main Branch:**
+1. **Update Versi Chaincode:**
+  - Ubah versi di file `network.sh`:
+    - `CC_VERSION` menjadi "1.2"
+    - `CC_SEQUENCE` menjadi "3"
 
-Untuk Developer Full-Stack (Fokus: folder backend/ dan frontend/)
+2. **Deploy Chaincode Baru:**
+  ```bash
+  ./network.sh deployCC
+```
 
-mengembangkan API di backend dan membangun komponen UI di frontend.
+### Untuk Developer Full-Stack (Fokus: folder `backend/` dan `frontend/`)
 
-Untuk bisa melakukan testing, perlu menjalankan seluruh tumpukan aplikasi (Jaringan Fabric, Backend, Frontend) di komputer lokal Anda seperti yang dijelaskan pada Bagian 3.
+#### **Pengembangan:**
+- Kembangkan API di folder `backend/`
+- Bangun komponen UI di folder `frontend/`
 
+#### **Testing Lokal:**
+- Jalankan seluruh tumpukan aplikasi (Jaringan Fabric, Backend, Frontend) di komputer lokal
+- Ikuti instruksi yang dijelaskan pada Bagian 3
 
-Backend (di server.js) akan berkomunikasi dengan blockchain.
+#### **Arsitektur Komunikasi:**
+- **Backend** (`server.js`) ↔ Blockchain
+- **Frontend** (`App.jsx`) ↔ API Backend
 
-Frontend (di App.jsx) akan berkomunikasi dengan API backend.
+## 📋 6. Perintah-Perintah Penting (Cheat Sheet)
 
-## 6. Perintah-Perintah Penting (Cheat Sheet)
+### Perintah Umum
+| Tujuan | Perintah | Catatan |
+|-------|---------|--------|
+| Membangun ulang jaringan dari nol | `./network.sh restart` | Jangan lupa jalankan skrip persetujuan setelah restart |
+| Matikan kontainer jaringan | `./network.sh down` | - |
+| Deploy chaincode baru | `./network.sh deployCC` | Pastikan chaincode sudah di-build |
+| Upgrade chaincode | `./network.sh upgrade` | Ubah versi/sequence di `network.sh` dulu |
+| Lihat kontainer Docker aktif | `docker ps -a` | - |
 
-Membangun ulang seluruh jaringan dari nol (paling sering digunakan)
-
-#### ./network.sh restart
-
-Men-deploy atau meng-upgrade chaincode (setelah ada perubahan kode chaincode)
-
-#### ./network.sh upgrade
-
-Melihat semua kontainer Docker yang berjalan
-
-#### docker ps -a
-
-Menjalankan server backend
-(jalankan dari dalam folder 'backend')
-
-#### node server.js
-
-Menjalankan server frontend
-(jalankan dari dalam folder 'frontend')
-
-#### npm run dev
+### Server & Development
+| Tujuan | Perintah | Catatan |
+|-------|---------|--------|
+| Jalankan backend | `node server.js` | Di folder `backend` |
+| Jalankan frontend | `npm run dev` | Di folder `frontend` |
+| Build frontend untuk produksi | `npm run build` | Di folder `frontend` |
