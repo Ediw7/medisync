@@ -14,14 +14,14 @@ export CC_NAME="medisync"
 export CC_SRC_PATH_IN_CONTAINER="/opt/gopath/src/github.com/chaincode/medisync/javascript/"
 
 # --- Variabel untuk Upgrade ---
-export CC_VERSION="1.3"
-export CC_SEQUENCE="1"
+export CC_VERSION="2.0"
+export CC_SEQUENCE="2"
 
 
 # Fungsi untuk membersihkan lingkungan
 function clearContainers() {
   echo "========== Menghapus kontainer-kontainer lama... =========="
-  docker-compose -f $COMPOSE_FILE -p $COMPOSE_PROJECT_NAME down --volumes --remove-orphans
+  docker compose -f $COMPOSE_FILE -p $COMPOSE_PROJECT_NAME down --volumes --remove-orphans
 
   LINGERING_CONTAINERS=$(docker ps -aq --filter "name=${COMPOSE_PROJECT_NAME}")
   if [ -n "$LINGERING_CONTAINERS" ]; then
@@ -73,7 +73,7 @@ function networkUp() {
     generateCrypto
     createGenesisBlock
     echo "========== Menjalankan Jaringan Docker... =========="
-    docker-compose -f $COMPOSE_FILE -p $COMPOSE_PROJECT_NAME up -d
+    docker compose -f $COMPOSE_FILE -p $COMPOSE_PROJECT_NAME up -d
     docker ps -a
     echo "========== Jaringan Docker berhasil berjalan =========="
 }
