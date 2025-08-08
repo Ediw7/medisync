@@ -11,7 +11,6 @@ const ManajemenProduksi = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // State untuk filter dan sorting
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
@@ -23,7 +22,6 @@ const ManajemenProduksi = () => {
   });
   const [sortConfig, setSortConfig] = useState({ key: 'tanggal_produksi', direction: 'desc' });
 
-  // Fungsi untuk mengambil data dari backend dengan filter
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -32,7 +30,6 @@ const ManajemenProduksi = () => {
       if (!token) throw new Error('Silakan login terlebih dahulu');
 
       const params = new URLSearchParams();
-      // Hanya tambahkan parameter jika nilainya ada
       if (filters.month) params.append('month', filters.month);
       if (filters.year) params.append('year', filters.year);
       if (filters.minJumlah) params.append('minJumlah', filters.minJumlah);
@@ -51,7 +48,6 @@ const ManajemenProduksi = () => {
       const result = await response.json();
       if (!result.success) throw new Error(result.message);
       
-      // Pencarian (search) dilakukan di sisi client setelah data diterima
       let data = result.data.filter(item => item.status !== 'Tercatat di Blockchain');
       if (searchTerm) {
         data = data.filter(item =>
@@ -69,11 +65,10 @@ const ManajemenProduksi = () => {
     }
   }, [filters, sortConfig, searchTerm, navigate]);
 
-  // Panggil fetchData setiap kali filter, sorting, atau search term berubah
   useEffect(() => {
     const handler = setTimeout(() => {
         fetchData();
-    }, 500); // Debounce untuk mengurangi request saat mengetik
+    }, 500);
     return () => clearTimeout(handler);
   }, [fetchData]);
   
@@ -92,6 +87,27 @@ const ManajemenProduksi = () => {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
+  };
+
+  // --- FUNGSI BARU UNTUK MENGHAPUS DATA ---
+  const handleDelete = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus jadwal produksi ini?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/produksi/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || 'Gagal menghapus data');
+      }
+      // Hapus item dari state lokal agar UI langsung update
+      setProduksiData(produksiData.filter(item => item.id !== id));
+      alert('Jadwal produksi berhasil dihapus');
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   return (
@@ -164,6 +180,8 @@ const ManajemenProduksi = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4">
                           <button onClick={() => navigate(`/produsen/produksi/detail/${item.id}`)} className="text-indigo-600 hover:text-indigo-900">Detail</button>
                           <button onClick={() => navigate(`/produsen/produksi/edit/${item.id}`)} className="text-yellow-600 hover:text-yellow-900">Edit</button>
+                          {/* --- TOMBOL HAPUS SEKARANG MEMANGGIL FUNGSI handleDelete --- */}
+                          <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:text-red-900">Hapus</button>
                         </td>
                       </tr>
                     ))}

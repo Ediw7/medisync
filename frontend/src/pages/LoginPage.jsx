@@ -21,6 +21,7 @@ function LoginPage() {
             const res = await axios.post('http://localhost:5000/api/auth/login', form);
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('username', res.data.username);
+            localStorage.setItem('namaResmi', res.data.namaResmi);
             
             const userRole = res.data.role;
             if (userRole !== role) {

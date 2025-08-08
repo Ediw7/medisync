@@ -90,7 +90,7 @@ const DetailProduksi = () => {
                 <main className="pt-16 p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold">Detail Produksi: {produksi.batch_id}</h1>
-                        <button onClick={() => navigate('/produsen/riwayat-produksi')} className="bg-gray-200 text-gray-800 py-2 px-4 rounded">Kembali</button>
+                        <button onClick={() => navigate('/produsen/manajemen-produksi')} className="bg-gray-200 text-gray-800 py-2 px-4 rounded">Kembali</button>
                     </div>
                     {error && <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>}
                     <div className="bg-white p-6 rounded-lg shadow">

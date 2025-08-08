@@ -42,7 +42,12 @@ const authController = {
             }
 
             const token = jwt.sign({ id: user.id, role: user.role, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
-            res.json({ token, role: user.role, username: user.username });
+             res.json({ 
+                token, 
+                role: user.role, 
+                username: user.username,
+                namaResmi: user.nama_resmi 
+            });
         } catch (err) {
             res.status(500).json({ message: 'Kesalahan server', error: err.message });
         }
