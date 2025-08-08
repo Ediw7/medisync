@@ -4,7 +4,8 @@ const cors = require('cors');
 const path = require('path');
 
 const authRoutes = require('./routes/auth');
-const produksiRoutes = require('./routes/produsen/produksiRoute'); // <-- Path Impor Diperbarui
+const produksiRoutes = require('./routes/produsen/produksiRoute'); 
+const pesananPbfRoutes = require('./routes/pbf/pesananRoute'); 
 const blockchainRoutes = require('./routes/blockchain');
 
 const app = express();
@@ -17,7 +18,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Gunakan semua rute
 app.use('/api/auth', authRoutes);
-app.use('/api/produksi', produksiRoutes); // <-- Gunakan rute baru
+app.use('/api/produksi', produksiRoutes);
+app.use('/api/pesanan-pbf', pesananPbfRoutes);
 app.use('/api/blockchain', blockchainRoutes);
 
 const PORT = process.env.PORT || 5000;

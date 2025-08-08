@@ -4,10 +4,8 @@ import LandingPage from './pages/LandingPage';
 import PilihRole from './pages/PilihRole';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import ProdusenDashboard from './pages/produsen/ProdusenDashboard';
-import PbfDashboard from './pages/pbf/PbfDashboard';
-import ApotekDashboard from './pages/apotek/ApotekDashboard';
 
+import ProdusenDashboard from './pages/produsen/ProdusenDashboard';
 import ManajemenProduksi from './pages/produsen/manajemenproduksi/ManajemenProduksi';
 import TambahProduksi from './pages/produsen/manajemenproduksi/TambahProduksi';
 import EditProduksi from './pages/produsen/manajemenproduksi/EditProduksi';
@@ -16,6 +14,14 @@ import RiwayatProduksi from './pages/produsen/manajemenproduksi/RiwayatProduksi'
 
 import MonitoringStok from './pages/produsen/monitoringstok/MonitoringStok';
 import RiwayatDistribusi from './pages/produsen/monitoringstok/RiwayatDistribusi';
+
+import PbfDashboard from './pages/pbf/PbfDashboard';
+import PesanObat from './pages/pbf/pesanobat/PesanObat';
+
+
+import ApotekDashboard from './pages/apotek/ApotekDashboard';
+
+
 
 
 function App() {
@@ -38,6 +44,9 @@ function App() {
       <Route path="/produsen/riwayat-distribusi" element={<RiwayatDistribusi />} /> 
       
       <Route path="/pbf/dashboard" element={<PbfDashboard />} />
+      <Route path="/pbf/pesan-obat" element={<PesanObat />} />
+
+
       <Route path="/apotek/dashboard" element={<ApotekDashboard />} />
     </Routes>
   );
