@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import SidebarProdusen from '../../../components/SidebarProdusen';
 import NavbarProdusen from '../../../components/NavbarProdusen';
+import qrcode from 'qrcode'; 
 
 const DetailProduksi = () => {
     const { id } = useParams();
@@ -27,6 +28,13 @@ const DetailProduksi = () => {
                 if (!response.ok) throw new Error('Gagal mengambil data');
                 const result = await response.json();
                 setProduksi(result.data);
+
+                 
+                if (result.data && result.data.status === 'Tercatat di Blockchain') {
+                    const qrUrl = await qrcode.toDataURL(result.data.batch_id);
+                    setQrCode(qrUrl);
+                }
+
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -82,7 +90,7 @@ const DetailProduksi = () => {
                 <main className="pt-16 p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold">Detail Produksi: {produksi.batch_id}</h1>
-                        <button onClick={() => navigate('/produsen/manajemen-produksi')} className="bg-gray-200 text-gray-800 py-2 px-4 rounded">Kembali</button>
+                        <button onClick={() => navigate('/produsen/riwayat-produksi')} className="bg-gray-200 text-gray-800 py-2 px-4 rounded">Kembali</button>
                     </div>
                     {error && <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>}
                     <div className="bg-white p-6 rounded-lg shadow">
@@ -97,10 +105,7 @@ const DetailProduksi = () => {
                             <DetailItem label="Tanggal Kadaluarsa" value={new Date(produksi.tanggal_kadaluarsa).toLocaleDateString('id-ID')} />
                             <DetailItem label="Prioritas" value={produksi.prioritas} />
                             <div className="col-span-full"><DetailItem label="Komposisi" value={produksi.komposisi_obat} /></div>
-                            
-                            {/* --- PERBAIKAN DI SINI --- */}
                             <div className="col-span-full"><DetailItem label="Hash Sertifikat" value={produksi.hash_sertifikat_analisis} /></div>
-                            
                             <div className="col-span-full">
                                 <p className="text-sm font-medium text-gray-500">Dokumen BPOM</p>
                                 {produksi.dokumen_bpom_path ? <a href={`http://localhost:5000/${produksi.dokumen_bpom_path.replace(/\\/g, '/')}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Lihat Dokumen</a> : '-'}
@@ -120,17 +125,21 @@ const DetailProduksi = () => {
                                     {isRecording ? 'Mencatat...' : 'Catat Batch ini ke Blockchain & Hasilkan QR Code'}
                                 </button>
                             )}
+                            
+                            
                             {produksi.status === 'Tercatat di Blockchain' && (
-                                <div className="p-4 text-center bg-green-100 text-green-800 rounded-lg">
-                                    Batch ini sudah tercatat secara permanen di blockchain.
-                                </div>
-                            )}
-                            {qrCode && (
-                                <div className="mt-6 text-center p-4 border rounded-lg">
-                                    <h3 className="font-semibold text-lg mb-2">QR Code Berhasil Dibuat!</h3>
-                                    <img src={qrCode} alt="QR Code" className="mx-auto" />
-                                    <p className="text-xs text-gray-500 mt-2">Pindai untuk verifikasi. Berisi: {produksi.batch_id}</p>
-                                </div>
+                                <>
+                                    <div className="p-4 text-center bg-green-100 text-green-800 rounded-lg">
+                                        Batch ini sudah tercatat secara permanen di blockchain.
+                                    </div>
+                                    {qrCode && (
+                                        <div className="mt-6 text-center p-4 border rounded-lg">
+                                            <h3 className="font-semibold text-lg mb-2">QR Code</h3>
+                                            <img src={qrCode} alt="QR Code" className="mx-auto" />
+                                            <p className="text-xs text-gray-500 mt-2">Pindai untuk verifikasi. Berisi: {produksi.batch_id}</p>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

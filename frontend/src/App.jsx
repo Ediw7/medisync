@@ -12,6 +12,7 @@ import ManajemenProduksi from './pages/produsen/manajemenproduksi/ManajemenProdu
 import TambahProduksi from './pages/produsen/manajemenproduksi/TambahProduksi';
 import EditProduksi from './pages/produsen/manajemenproduksi/EditProduksi';
 import DetailProduksi from './pages/produsen/manajemenproduksi/DetailProduksi';
+import RiwayatProduksi from './pages/produsen/manajemenproduksi/RiwayatProduksi';
 
 
 function App() {
@@ -28,7 +29,7 @@ function App() {
       <Route path="/produsen/produksi/tambah" element={<TambahProduksi />} />
       <Route path="/produsen/produksi/edit/:id" element={<EditProduksi />} />
       <Route path="/produsen/produksi/detail/:id" element={<DetailProduksi />} />
-
+      <Route path="/produsen/riwayat-produksi" element={<RiwayatProduksi />} />
       
       <Route path="/pbf/dashboard" element={<PbfDashboard />} />
       <Route path="/apotek/dashboard" element={<ApotekDashboard />} />

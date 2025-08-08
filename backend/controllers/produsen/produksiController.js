@@ -36,13 +36,42 @@ async function getGateway() {
 const produksiController = {
     getAll: async (req, res) => {
         try {
-            const [rows] = await db.query('SELECT * FROM produksi WHERE id_produsen = ? ORDER BY tanggal_produksi DESC', [req.user.id]);
+            // Ambil semua parameter filter dari query URL
+            const { month, year, minJumlah, maxJumlah, sortBy, sortOrder } = req.query;
+            
+            // Mulai membangun query SQL
+            let sql = 'SELECT * FROM produksi WHERE id_produsen = ?';
+            const params = [req.user.id];
+
+            // Tambahkan filter berdasarkan bulan dan tahun
+            if (month && year) {
+                sql += ' AND MONTH(tanggal_produksi) = ? AND YEAR(tanggal_produksi) = ?';
+                params.push(month, year);
+            }
+
+            // Tambahkan filter berdasarkan rentang jumlah
+            if (minJumlah) {
+                sql += ' AND jumlah >= ?';
+                params.push(minJumlah);
+            }
+            if (maxJumlah) {
+                sql += ' AND jumlah <= ?';
+                params.push(maxJumlah);
+            }
+
+            // Tambahkan pengurutan (sorting)
+            const validSortColumns = ['batch_id', 'nama_obat', 'jumlah', 'tanggal_produksi', 'status'];
+            const orderBy = validSortColumns.includes(sortBy) ? sortBy : 'tanggal_produksi';
+            const orderDirection = sortOrder === 'asc' ? 'ASC' : 'DESC';
+            sql += ` ORDER BY ${orderBy} ${orderDirection}`;
+
+            const [rows] = await db.query(sql, params);
             res.json({ success: true, data: rows });
         } catch (error) {
+            console.error("Error in getAll with filters:", error);
             res.status(500).json({ success: false, message: error.message });
         }
     },
-
     getById: async (req, res) => {
         try {
             const [rows] = await db.query('SELECT * FROM produksi WHERE id = ? AND id_produsen = ?', [req.params.id, req.user.id]);
