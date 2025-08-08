@@ -12,16 +12,18 @@ async function getGateway() {
     const ccpPath = path.resolve(__dirname, '..', '..', 'connection-org1.json');
     const ccp = JSON.parse(fs.readFileSync(ccpPath, 'utf8'));
     const gateway = new Gateway();
+    // Gunakan koneksi langsung tanpa discovery untuk menghindari masalah TLS yang kompleks
     const connectionOptions = {
         wallet,
         identity: 'admin',
-        discovery: { enabled: true, asLocalhost: true } // Aktifkan kembali service discovery
+        discovery: { enabled: false, asLocalhost: true }
     };
     await gateway.connect(ccp, connectionOptions);
     return gateway;
 }
 
 const produksiController = {
+    // CRUD Off-chain (getAll, getById, create, update, delete)
     getAll: async (req, res) => {
         try {
             const [rows] = await db.query('SELECT * FROM produksi WHERE id_produsen = ? ORDER BY tanggal_produksi DESC', [req.user.id]);
@@ -87,6 +89,8 @@ const produksiController = {
             res.status(500).json({ success: false, message: error.message });
         }
     },
+
+    // Fungsi untuk mencatat ke blockchain
     recordToBlockchain: async (req, res) => {
         const { id } = req.params;
         const id_produsen = req.user.id;
@@ -105,7 +109,10 @@ const produksiController = {
 
             gateway = await getGateway();
             const network = await gateway.getNetwork('medisyncchannel');
-            const contract = network.getContract('medisynccontract');
+            
+            // --- PERBAIKAN UTAMA DI SINI ---
+            // Nama chaincode harus 'medisync', sesuai dengan yang ada di network.sh
+            const contract = network.getContract('medisync');
 
             const transaction = contract.createTransaction('ProdusenContract:createObat');
             transaction.setEndorsingOrganizations('ProdusenMSP', 'PBFMSP');
