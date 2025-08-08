@@ -4,20 +4,33 @@ const { Contract } = require('fabric-contract-api');
 class PbfContract extends Contract {
     constructor() { super('PbfContract'); }
 
-    async transferToApotek(ctx, id, apotekMspId) {
-        if (apotekMspId !== 'ApotekMSP') { throw new Error('Obat hanya bisa ditransfer ke ApotekMSP'); }
+    async transferToApotek(ctx, id, hashSuratJalanBaru) {
         const mspID = ctx.clientIdentity.getMSPID();
-        if (mspID !== 'PBFMSP') { throw new Error(`ERROR: Hanya PBF yang bisa mentransfer ke Apotek.`); }
+        if (mspID !== 'PBFMSP') {
+            throw new Error(`ERROR: Hanya PBF yang bisa mentransfer ke Apotek.`);
+        }
 
-        const obatAsBytes = await ctx.stub.getState(id);
-        if (!obatAsBytes || obatAsBytes.length === 0) { throw new Error(`ERROR: Obat ${id} tidak ditemukan.`); }
+        const assetJSON = await ctx.stub.getState(id);
+        if (!assetJSON || assetJSON.length === 0) {
+            throw new Error(`ERROR: Obat dengan ID ${id} tidak ditemukan.`);
+        }
+        const obat = JSON.parse(assetJSON.toString());
 
-        const obat = JSON.parse(obatAsBytes.toString());
+        if (obat.pemilikSaatIni !== 'PBFMSP') {
+            throw new Error(`ERROR: Obat ini tidak dimiliki oleh PBF.`);
+        }
+        
         const timestamp = new Date(ctx.stub.getTxTimestamp().seconds.low * 1000).toISOString();
 
-        obat.pemilik = apotekMspId;
-        obat.status = 'DITERIMA_APOTEK';
-        obat.riwayat.push({ pemilik: apotekMspId, status: obat.status, timestamp });
+        obat.pemilikSaatIni = 'ApotekMSP';
+        obat.statusSaatIni = 'DIKIRIM_KE_APOTEK';
+        obat.hashDokumen.suratJalan = hashSuratJalanBaru;
+        obat.riwayat.push({
+            pemilik: 'ApotekMSP',
+            status: 'DIKIRIM_KE_APOTEK',
+            timestamp: timestamp,
+            detail: `Surat Jalan hash: ${hashSuratJalanBaru}`
+        });
 
         await ctx.stub.putState(id, Buffer.from(JSON.stringify(obat)));
         return JSON.stringify(obat);

@@ -14,8 +14,8 @@ export CC_NAME="medisync"
 export CC_SRC_PATH_IN_CONTAINER="/opt/gopath/src/github.com/chaincode/medisync/javascript/"
 
 # --- Variabel untuk Upgrade ---
-export CC_VERSION="2.0"
-export CC_SEQUENCE="2"
+export CC_VERSION="1.0"
+export CC_SEQUENCE="1"
 
 
 # Fungsi untuk membersihkan lingkungan

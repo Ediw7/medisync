@@ -7,8 +7,8 @@
 set -e
 export CHANNEL_NAME="medisyncchannel"
 export CC_NAME="medisync"
-export CC_VERSION="1.3"
-export CC_SEQUENCE="1"
+export CC_VERSION="1.0"
+export CC_SEQUENCE="1"  # <-- DIBENERIN: Kembali ke 1 karena ini deploy baru setelah restart
 export PACKAGE_ID=$(cat scripts/package.id)
 echo "Menyetujui chaincode sebagai APOTEK (Org3)..."
 docker exec -e CORE_PEER_LOCALMSPID="ApotekMSP" \

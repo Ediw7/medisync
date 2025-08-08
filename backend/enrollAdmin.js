@@ -1,36 +1,43 @@
 'use strict';
 
-const FabricCAServices = require('fabric-ca-client');
 const { Wallets } = require('fabric-network');
 const fs = require('fs');
 const path = require('path');
 
 async function main() {
     try {
-        // Muat profil koneksi
-        const ccpPath = path.resolve(__dirname, 'connection-org1.json');
-        const ccp = JSON.parse(fs.readFileSync(ccpPath, 'utf8'));
-
-        // Buat wallet untuk menyimpan identitas
+        // Buat wallet baru untuk menyimpan identitas
         const walletPath = path.join(process.cwd(), 'wallet');
         const wallet = await Wallets.newFileSystemWallet(walletPath);
-        console.log(`Wallet path: ${walletPath}`);
+        console.log(`Lokasi wallet: ${walletPath}`);
 
         // Cek apakah admin sudah ada di wallet
         const identity = await wallet.get('admin');
         if (identity) {
-            console.log('An identity for the admin user "admin" already exists in the wallet');
+            console.log('Identitas untuk admin "admin" sudah ada di dalam wallet.');
             return;
         }
 
-        // Dapatkan path ke material kripto admin
+        // Dapatkan path ke material kripto admin Org1
         const adminCertPath = path.resolve(__dirname, '../organizations/peerOrganizations/org1.medisync.com/users/Admin@org1.medisync.com/msp/signcerts/Admin@org1.medisync.com-cert.pem');
-        const adminKeyPath = path.resolve(__dirname, '../organizations/peerOrganizations/org1.medisync.com/users/Admin@org1.medisync.com/msp/keystore/');
+        const adminKeyDirPath = path.resolve(__dirname, '../organizations/peerOrganizations/org1.medisync.com/users/Admin@org1.medisync.com/msp/keystore/');
         
+        // Pastikan file sertifikat ada
+        if (!fs.existsSync(adminCertPath)) {
+            console.error(`File sertifikat admin tidak ditemukan di: ${adminCertPath}`);
+            process.exit(1);
+        }
+
+        // Temukan file kunci privat secara dinamis di dalam folder keystore
+        const keyFiles = fs.readdirSync(adminKeyDirPath);
+        if (keyFiles.length === 0) {
+            console.error(`Tidak ada file kunci privat yang ditemukan di: ${adminKeyDirPath}`);
+            process.exit(1);
+        }
+        const adminKeyPath = path.resolve(adminKeyDirPath, keyFiles[0]);
+
         const certificate = fs.readFileSync(adminCertPath).toString();
-        // Temukan file kunci privat secara dinamis
-        const keyFile = fs.readdirSync(adminKeyPath)[0];
-        const privateKey = fs.readFileSync(path.resolve(adminKeyPath, keyFile)).toString();
+        const privateKey = fs.readFileSync(adminKeyPath).toString();
 
         // Buat identitas X.509 baru
         const x509Identity = {
@@ -44,10 +51,10 @@ async function main() {
 
         // Masukkan identitas admin baru ke dalam wallet
         await wallet.put('admin', x509Identity);
-        console.log('Successfully enrolled admin user "admin" and imported it into the wallet');
+        console.log('Berhasil mendaftarkan user admin "admin" dan menyimpannya ke dalam wallet');
 
     } catch (error) {
-        console.error(`Failed to enroll admin user "admin": ${error}`);
+        console.error(`Gagal mendaftarkan user admin "admin": ${error}`);
         process.exit(1);
     }
 }

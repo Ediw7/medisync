@@ -9,9 +9,8 @@ set -e
 
 export CHANNEL_NAME="medisyncchannel"
 export CC_NAME="medisync"
-export CC_VERSION="1.3"
+export CC_VERSION="1.0"
 export CC_SEQUENCE="1"
-
 echo "Mencoba melakukan commit chaincode ke channel..."
 # Cek dulu apakah semua sudah setuju
 echo "Memeriksa kesiapan commit..."
