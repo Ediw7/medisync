@@ -6,6 +6,7 @@ const path = require('path');
 const authRoutes = require('./routes/auth');
 const produksiRoutes = require('./routes/produsen/produksiRoute'); 
 const pesananPbfRoutes = require('./routes/pbf/pesananRoute'); 
+const pbfRoutes = require('./routes/pbf/pbfRoute');
 const blockchainRoutes = require('./routes/blockchain');
 
 const app = express();
@@ -20,6 +21,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/produksi', produksiRoutes);
 app.use('/api/pesanan-pbf', pesananPbfRoutes);
+app.use('/api/pbf', pbfRoutes);
 app.use('/api/blockchain', blockchainRoutes);
 
 const PORT = process.env.PORT || 5000;
