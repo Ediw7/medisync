@@ -5,6 +5,18 @@ const { Gateway, Wallets } = require('fabric-network');
 const path = require('path');
 const fs = require('fs');
 const qrcode = require('qrcode');
+const crypto = require('crypto');
+
+// Fungsi untuk menghitung hash SHA-256 dari sebuah file
+function calculateFileHash(filePath) {
+    return new Promise((resolve, reject) => {
+        const hash = crypto.createHash('sha256');
+        const stream = fs.createReadStream(filePath);
+        stream.on('data', (data) => hash.update(data));
+        stream.on('end', () => resolve(hash.digest('hex')));
+        stream.on('error', (err) => reject(err));
+    });
+}
 
 async function getGateway() {
     const walletPath = path.resolve(__dirname, '..', '..', 'wallet');
@@ -12,7 +24,6 @@ async function getGateway() {
     const ccpPath = path.resolve(__dirname, '..', '..', 'connection-org1.json');
     const ccp = JSON.parse(fs.readFileSync(ccpPath, 'utf8'));
     const gateway = new Gateway();
-    // Gunakan koneksi langsung tanpa discovery untuk menghindari masalah TLS yang kompleks
     const connectionOptions = {
         wallet,
         identity: 'admin',
@@ -23,7 +34,6 @@ async function getGateway() {
 }
 
 const produksiController = {
-    // CRUD Off-chain (getAll, getById, create, update, delete)
     getAll: async (req, res) => {
         try {
             const [rows] = await db.query('SELECT * FROM produksi WHERE id_produsen = ? ORDER BY tanggal_produksi DESC', [req.user.id]);
@@ -32,6 +42,7 @@ const produksiController = {
             res.status(500).json({ success: false, message: error.message });
         }
     },
+
     getById: async (req, res) => {
         try {
             const [rows] = await db.query('SELECT * FROM produksi WHERE id = ? AND id_produsen = ?', [req.params.id, req.user.id]);
@@ -43,15 +54,28 @@ const produksiController = {
             res.status(500).json({ success: false, message: error.message });
         }
     },
+
     create: async (req, res) => {
-        const { batch_id, nama_obat, jumlah, tanggal_produksi, tanggal_kadaluarsa, prioritas, status, komposisi_obat } = req.body;
+        const { batch_id, nama_obat, nomor_izin_edar, dosis, jumlah, tanggal_produksi, tanggal_kadaluarsa, prioritas, status, komposisi_obat } = req.body;
         const id_produsen = req.user.id;
-        const dokumen_bpom = req.file ? req.file.path : null;
+        
+        let dokumen_bpom_path = null;
+        let sertifikat_analisis_path = null;
+        let hash_sertifikat_analisis = null;
 
         try {
+            // PERBAIKAN UTAMA: Mengambil file dari req.files (objek)
+            if (req.files && req.files.dokumen_bpom) {
+                dokumen_bpom_path = req.files.dokumen_bpom[0].path;
+            }
+            if (req.files && req.files.sertifikat_analisis) {
+                sertifikat_analisis_path = req.files.sertifikat_analisis[0].path;
+                hash_sertifikat_analisis = await calculateFileHash(sertifikat_analisis_path);
+            }
+
             const [result] = await db.query(
-                'INSERT INTO produksi (batch_id, nama_obat, jumlah, tanggal_produksi, tanggal_kadaluarsa, prioritas, status, komposisi_obat, dokumen_bpom, id_produsen) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [batch_id, nama_obat, jumlah, tanggal_produksi, tanggal_kadaluarsa, prioritas, status, komposisi_obat, dokumen_bpom, id_produsen]
+                'INSERT INTO produksi (batch_id, nama_obat, nomor_izin_edar, dosis, jumlah, tanggal_produksi, tanggal_kadaluarsa, prioritas, status, komposisi_obat, dokumen_bpom_path, sertifikat_analisis_path, hash_sertifikat_analisis, id_produsen) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [batch_id, nama_obat, nomor_izin_edar, dosis, jumlah, tanggal_produksi, tanggal_kadaluarsa, prioritas, status, komposisi_obat, dokumen_bpom_path, sertifikat_analisis_path, hash_sertifikat_analisis, id_produsen]
             );
             res.status(201).json({ success: true, message: 'Jadwal produksi berhasil dibuat', id: result.insertId });
         } catch (error) {
@@ -61,14 +85,26 @@ const produksiController = {
             res.status(500).json({ success: false, message: error.message });
         }
     },
+
     update: async (req, res) => {
-        const { batch_id, nama_obat, jumlah, tanggal_produksi, tanggal_kadaluarsa, prioritas, status, komposisi_obat } = req.body;
-        const dokumen_bpom = req.file ? req.file.path : req.body.dokumen_bpom_existing;
+        const { batch_id, nama_obat, nomor_izin_edar, dosis, jumlah, tanggal_produksi, tanggal_kadaluarsa, prioritas, status, komposisi_obat } = req.body;
+        
+        let dokumen_bpom_path = req.body.dokumen_bpom_path_existing || null;
+        let sertifikat_analisis_path = req.body.sertifikat_analisis_path_existing || null;
+        let hash_sertifikat_analisis = req.body.hash_sertifikat_analisis_existing || null;
         
         try {
+            if (req.files && req.files.dokumen_bpom) {
+                dokumen_bpom_path = req.files.dokumen_bpom[0].path;
+            }
+            if (req.files && req.files.sertifikat_analisis) {
+                sertifikat_analisis_path = req.files.sertifikat_analisis[0].path;
+                hash_sertifikat_analisis = await calculateFileHash(sertifikat_analisis_path);
+            }
+            
             const [result] = await db.query(
-                'UPDATE produksi SET batch_id = ?, nama_obat = ?, jumlah = ?, tanggal_produksi = ?, tanggal_kadaluarsa = ?, prioritas = ?, status = ?, komposisi_obat = ?, dokumen_bpom = ? WHERE id = ? AND id_produsen = ?',
-                [batch_id, nama_obat, jumlah, tanggal_produksi, tanggal_kadaluarsa, prioritas, status, komposisi_obat, dokumen_bpom, req.params.id, req.user.id]
+                'UPDATE produksi SET batch_id = ?, nama_obat = ?, nomor_izin_edar = ?, dosis = ?, jumlah = ?, tanggal_produksi = ?, tanggal_kadaluarsa = ?, prioritas = ?, status = ?, komposisi_obat = ?, dokumen_bpom_path = ?, sertifikat_analisis_path = ?, hash_sertifikat_analisis = ? WHERE id = ? AND id_produsen = ?',
+                [batch_id, nama_obat, nomor_izin_edar, dosis, jumlah, tanggal_produksi, tanggal_kadaluarsa, prioritas, status, komposisi_obat, dokumen_bpom_path, sertifikat_analisis_path, hash_sertifikat_analisis, req.params.id, req.user.id]
             );
             if (result.affectedRows === 0) {
                 return res.status(404).json({ success: false, message: 'Data tidak ditemukan atau Anda tidak berwenang' });
@@ -78,7 +114,8 @@ const produksiController = {
             res.status(500).json({ success: false, message: error.message });
         }
     },
-    delete: async (req, res) => {
+
+     delete: async (req, res) => {
         try {
             const [result] = await db.query('DELETE FROM produksi WHERE id = ? AND id_produsen = ?', [req.params.id, req.user.id]);
             if (result.affectedRows === 0) {
@@ -89,6 +126,7 @@ const produksiController = {
             res.status(500).json({ success: false, message: error.message });
         }
     },
+    
 
     // Fungsi untuk mencatat ke blockchain
     recordToBlockchain: async (req, res) => {
@@ -109,24 +147,22 @@ const produksiController = {
 
             gateway = await getGateway();
             const network = await gateway.getNetwork('medisyncchannel');
-            
-            // --- PERBAIKAN UTAMA DI SINI ---
-            // Nama chaincode harus 'medisync', sesuai dengan yang ada di network.sh
             const contract = network.getContract('medisync');
 
             const transaction = contract.createTransaction('ProdusenContract:createObat');
             transaction.setEndorsingOrganizations('ProdusenMSP', 'PBFMSP');
 
             console.log('Submitting ON-CHAIN transaction for batch:', prodData.batch_id);
+            
             await transaction.submit(
                 prodData.batch_id,
                 prodData.nama_obat,
-                'DUMMY-NIE-123',
+                prodData.nomor_izin_edar || 'TIDAK ADA DATA',
                 prodData.komposisi_obat || '',
-                'N/A',
+                prodData.dosis || 'N/A',
                 new Date(prodData.tanggal_produksi).toISOString().split('T')[0],
                 new Date(prodData.tanggal_kadaluarsa).toISOString().split('T')[0],
-                'dummy_hash_sertifikat'
+                prodData.hash_sertifikat_analisis || 'TIDAK ADA HASH'
             );
             console.log('ON-CHAIN transaction successful.');
 
