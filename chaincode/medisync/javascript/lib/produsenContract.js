@@ -9,7 +9,8 @@ class ProdusenContract extends Contract {
         return assetJSON && assetJSON.length > 0;
     }
 
-    async createObat(ctx, id, namaObat, nomorIzinEdar, komposisi, dosis, tanggalProduksi, tanggalKadaluarsa, hashSertifikatAnalisis) {
+    // --- PERBAIKAN: Fungsi ini sekarang menerima 10 parameter sesuai controller ---
+    async createObat(ctx, id, namaObat, nomorIzinEdar, komposisi, dosis, tanggalProduksi, tanggalKadaluarsa, bentukSediaan, penanggungJawab, hashHasilUjiMutu) {
         const mspID = ctx.clientIdentity.getMSPID();
         if (mspID !== 'ProdusenMSP') {
             throw new Error(`ERROR: Organisasi ${mspID} tidak diizinkan untuk membuat aset obat.`);
@@ -22,6 +23,7 @@ class ProdusenContract extends Contract {
 
         const timestamp = new Date(ctx.stub.getTxTimestamp().seconds.low * 1000).toISOString();
 
+        // Membuat objek aset sesuai dengan semua parameter yang diterima
         const obat = {
             docType: 'obat',
             id: id,
@@ -29,12 +31,14 @@ class ProdusenContract extends Contract {
             nomorIzinEdar: nomorIzinEdar,
             komposisi: komposisi,
             dosis: dosis,
+            bentukSediaan: bentukSediaan,
             tanggalProduksi: tanggalProduksi,
             tanggalKadaluarsa: tanggalKadaluarsa,
+            penanggungJawab: penanggungJawab,
             pemilikSaatIni: mspID,
             statusSaatIni: 'DIPRODUKSI',
             hashDokumen: {
-                sertifikatAnalisis: hashSertifikatAnalisis,
+                hasilUjiMutu: hashHasilUjiMutu,
                 suratJalan: ''
             },
             riwayat: [{

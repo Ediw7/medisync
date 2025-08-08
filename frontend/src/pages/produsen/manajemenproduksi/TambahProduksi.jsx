@@ -70,6 +70,18 @@ const TambahProduksi = () => {
       return;
     }
 
+    // Validasi bentuk_sediaan dan penanggung_jawab
+    if (!formData.bentuk_sediaan) {
+      setError('Bentuk sediaan wajib dipilih.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (!formData.penanggung_jawab) {
+      setError('Penanggung jawab wajib diisi.');
+      setIsSubmitting(false);
+      return;
+    }
+
     const token = localStorage.getItem('token');
     if (!token) {
       setError('Sesi Anda telah berakhir, silakan login kembali.');
@@ -104,9 +116,7 @@ const TambahProduksi = () => {
         body: data,
       });
       const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || 'Gagal menambahkan data produksi.');
-      }
+      if (!response.ok) throw new Error(result.message || 'Gagal menambahkan data produksi.');
       alert('Jadwal produksi berhasil dibuat!');
       navigate('/produsen/manajemen-produksi');
     } catch (err) {
@@ -121,7 +131,7 @@ const TambahProduksi = () => {
       <SidebarProdusen isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         <NavbarProdusen onLogout={() => { localStorage.clear(); navigate('/'); }} />
-        <main className="flex-1 pt-16 p-6">
+        <main className="flex-1 p-6">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold text-gray-800 mb-6">Jadwalkan Produksi Baru</h1>
             {error && (
@@ -181,8 +191,9 @@ const TambahProduksi = () => {
                     value={formData.bentuk_sediaan}
                     onChange={handleInputChange}
                     className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                    required
                   >
-                    <option value="">-- Pilih Bentuk Sediaan --</option>
+                    <option value="" disabled>Pilih Bentuk Sediaan</option>
                     <option value="Tablet">Tablet</option>
                     <option value="Kapsul">Kapsul</option>
                     <option value="Sirup">Sirup</option>
@@ -265,6 +276,7 @@ const TambahProduksi = () => {
                     onChange={handleInputChange}
                     placeholder="Masukkan Nama Penanggung Jawab"
                     className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                    required
                   />
                 </div>
               </div>
