@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import SidebarPbf from '../../../components/SidebarPbf';
 import NavbarPbf from '../../../components/NavbarPbf';
-import { Plus, Trash2, Loader2, Upload, FileText } from 'lucide-react';
+import { Plus, Trash2, Loader2 } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 
 const TambahPesanan = () => {
@@ -13,38 +13,65 @@ const TambahPesanan = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [stokObat, setStokObat] = useState([]);
   const [infoPemesanan, setInfoPemesanan] = useState({
-    nomorPo: `PO-${Date.now()}`,
-    namaApotekerPbf: '',
-    jabatanApotekerPbf: '',
-    nomorSipaPbf: '',
-    alamatProdusen: '',
-    teleponProdusen: '',
-    alamatPengiriman: localStorage.getItem('namaResmi') || '',
-    metodePembayaran: 'Transfer Bank',
-    totalHarga: 0,
-  });
-  const [dokumen, setDokumen] = useState({
-    sikaSipa: null,
-    izinPbf: null,
-    npwp: null,
-    aktePerusahaan: null,
-    nib: null,
+    nomor_po: '',
+    nama_pbf: '',
+    alamat_pbf: '',
+    nomor_siup: '',
+    nomor_sia_sika: '',
+    nama_apoteker: '',
+    nomor_sipa: '',
+    kontak_telepon: '',
+    kontak_email: '',
+    tanggal_pesanan: new Date().toISOString().split('T')[0],
+    tujuan_distribusi: '',
+    catatan_khusus: '',
+    total_harga: 0,
   });
   const [itemObat, setItemObat] = useState({
-    idProduksi: '',
-    namaObat: '',
-    qty: '',
-    hargaSatuan: '',
-    satuan: 'Box',
-    nomorNie: '',
-    coa: null,
-    coaPath: '',
-    keterangan: '',
+    id_produksi: '',
+    nama_obat: '',
+    bentuk_sediaan: '',
+    dosis: '',
+    jumlah_pesanan: '',
+    harga_per_unit: '',
+    total_harga: '',
   });
   const [detailObat, setDetailObat] = useState([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch profil PBF
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login/pbf');
+          return;
+        }
+        const response = await fetch('http://localhost:5000/api/pbf/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const result = await response.json();
+        if (result.success) {
+          setInfoPemesanan((prev) => ({
+            ...prev,
+            nama_pbf: result.data.nama_resmi,
+            alamat_pbf: result.data.alamat,
+            kontak_email: result.data.email,
+            nomor_siup: result.data.nomor_izin,
+          }));
+        } else {
+          throw new Error(result.message || 'Gagal memuat profil PBF.');
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchProfile();
+  }, [navigate]);
 
   // Fetch stok obat
   useEffect(() => {
@@ -79,28 +106,22 @@ const TambahPesanan = () => {
 
   // Handler untuk info pemesanan
   const handleInfoChange = (e) => {
-    setInfoPemesanan({ ...infoPemesanan, [e.target.name]: e.target.value });
-  };
-
-  // Handler untuk upload dokumen
-  const handleDokumenChange = (e) => {
-    const { name, files } = e.target;
-    if (files[0]) {
-      setDokumen({ ...dokumen, [name]: files[0] });
-    }
+    const { name, value } = e.target;
+    setInfoPemesanan({ ...infoPemesanan, [name]: value });
   };
 
   // Handler untuk item obat
   const handleItemChange = (e) => {
     const { name, value } = e.target;
-    setItemObat({ ...itemObat, [name]: value });
-  };
-
-  // Handler untuk upload COA
-  const handleCoaChange = (e) => {
-    if (e.target.files[0]) {
-      setItemObat({ ...itemObat, coa: e.target.files[0], coaPath: '' });
-    }
+    setItemObat((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'jumlah_pesanan' || name === 'harga_per_unit') {
+        const jumlah = Number(updated.jumlah_pesanan) || 0;
+        const harga = Number(updated.harga_per_unit) || 0;
+        updated.total_harga = jumlah * harga;
+      }
+      return updated;
+    });
   };
 
   // Handler untuk memilih obat
@@ -109,53 +130,55 @@ const TambahPesanan = () => {
     const selected = stokObat.find((o) => o.id.toString() === selectedId);
     if (selected) {
       setItemObat({
-        idProduksi: selected.id,
-        namaObat: selected.nama_obat,
-        hargaSatuan: selected.harga_satuan || 0,
-        satuan: selected.satuan || 'Box',
-        qty: '1',
-        nomorNie: selected.nomor_izin_edar || '',
-        coa: null,
-        coaPath: selected.sertifikat_analisis_path || '',
-        keterangan: '',
+        id_produksi: selected.id,
+        nama_obat: selected.nama_obat,
+        bentuk_sediaan: selected.bentuk_sediaan || '',
+        dosis: selected.dosis || '',
+        jumlah_pesanan: '1',
+        harga_per_unit: '',
+        total_harga: '',
       });
     } else {
       setItemObat({
-        idProduksi: '',
-        namaObat: '',
-        hargaSatuan: '',
-        satuan: 'Box',
-        qty: '',
-        nomorNie: '',
-        coa: null,
-        coaPath: '',
-        keterangan: '',
+        id_produksi: '',
+        nama_obat: '',
+        bentuk_sediaan: '',
+        dosis: '',
+        jumlah_pesanan: '',
+        harga_per_unit: '',
+        total_harga: '',
       });
     }
   };
 
   // Handler untuk tambah item
   const handleAddItem = () => {
-    if (!itemObat.idProduksi || !itemObat.qty || Number(itemObat.qty) <= 0 || !itemObat.nomorNie) {
-      setError('Pilih obat, masukkan jumlah yang valid, dan isi Nomor Izin Edar.');
+    if (!itemObat.id_produksi || !itemObat.jumlah_pesanan || Number(itemObat.jumlah_pesanan) <= 0 || !itemObat.harga_per_unit) {
+      setError('Pilih obat, masukkan jumlah dan harga satuan yang valid.');
       return;
     }
-    const selectedObat = stokObat.find((o) => o.id.toString() === itemObat.idProduksi.toString());
-    if (Number(itemObat.qty) > selectedObat.jumlah) {
-      setError(`Jumlah pesanan (${itemObat.qty}) melebihi stok tersedia (${selectedObat.jumlah}).`);
+    const selectedObat = stokObat.find((o) => o.id.toString() === itemObat.id_produksi.toString());
+    if (Number(itemObat.jumlah_pesanan) > selectedObat.jumlah) {
+      setError(`Jumlah pesanan (${itemObat.jumlah_pesanan}) melebihi stok tersedia (${selectedObat.jumlah}).`);
       return;
     }
-    setDetailObat([...detailObat, { ...itemObat, qty: Number(itemObat.qty), hargaSatuan: Number(itemObat.hargaSatuan) }]);
+    setDetailObat([...detailObat, {
+      id_produksi: Number(itemObat.id_produksi),
+      nama_obat: itemObat.nama_obat,
+      bentuk_sediaan: itemObat.bentuk_sediaan,
+      dosis: itemObat.dosis,
+      jumlah_pesanan: Number(itemObat.jumlah_pesanan),
+      harga_per_unit: Number(itemObat.harga_per_unit),
+      total_harga: Number(itemObat.total_harga),
+    }]);
     setItemObat({
-      idProduksi: '',
-      namaObat: '',
-      qty: '',
-      hargaSatuan: '',
-      satuan: 'Box',
-      nomorNie: '',
-      coa: null,
-      coaPath: '',
-      keterangan: '',
+      id_produksi: '',
+      nama_obat: '',
+      bentuk_sediaan: '',
+      dosis: '',
+      jumlah_pesanan: '',
+      harga_per_unit: '',
+      total_harga: '',
     });
     setError('');
   };
@@ -167,8 +190,8 @@ const TambahPesanan = () => {
 
   // Hitung total harga
   useEffect(() => {
-    const total = detailObat.reduce((sum, item) => sum + Number(item.qty) * Number(item.hargaSatuan), 0);
-    setInfoPemesanan((prev) => ({ ...prev, totalHarga: total }));
+    const total = detailObat.reduce((sum, item) => sum + Number(item.total_harga), 0);
+    setInfoPemesanan((prev) => ({ ...prev, total_harga: total }));
   }, [detailObat]);
 
   // Handler untuk hapus tanda tangan
@@ -177,131 +200,105 @@ const TambahPesanan = () => {
   };
 
   // Handler untuk submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
+    const handleSubmit = async (e) => {
+       e.preventDefault();
+       setError('');
+       setIsSubmitting(true);
 
-    // Validasi info pemesanan
-    if (
-      !infoPemesanan.nomorPo ||
-      !infoPemesanan.namaApotekerPbf ||
-      !infoPemesanan.jabatanApotekerPbf ||
-      !infoPemesanan.nomorSipaPbf ||
-      !infoPemesanan.alamatProdusen ||
-      !infoPemesanan.teleponProdusen ||
-      !infoPemesanan.alamatPengiriman ||
-      !infoPemesanan.metodePembayaran
-    ) {
-      setError('Semua informasi pemesanan harus diisi.');
-      setIsSubmitting(false);
-      return;
-    }
+       // Validasi info pemesanan
+       if (
+         !infoPemesanan.nomor_po ||
+         !infoPemesanan.nama_pbf ||
+         !infoPemesanan.alamat_pbf ||
+         !infoPemesanan.nomor_siup ||
+         !infoPemesanan.nomor_sia_sika ||
+         !infoPemesanan.nama_apoteker ||
+         !infoPemesanan.nomor_sipa ||
+         !infoPemesanan.kontak_telepon ||
+         !infoPemesanan.kontak_email ||
+         !infoPemesanan.tanggal_pesanan
+       ) {
+         setError('Semua informasi pemesanan wajib diisi.');
+         setIsSubmitting(false);
+         return;
+       }
 
-    // Validasi dokumen
-    if (!dokumen.sikaSipa || !dokumen.izinPbf || !dokumen.npwp || !dokumen.aktePerusahaan || !dokumen.nib) {
-      setError('Semua dokumen legal wajib diunggah.');
-      setIsSubmitting(false);
-      return;
-    }
+       // Validasi detail obat
+       if (detailObat.length === 0) {
+         setError('Tambahkan setidaknya satu item obat.');
+         setIsSubmitting(false);
+         return;
+       }
 
-    // Validasi detail obat
-    if (detailObat.length === 0) {
-      setError('Tambahkan setidaknya satu item obat.');
-      setIsSubmitting(false);
-      return;
-    }
+       // Validasi tanda tangan
+       if (sigCanvas.current.isEmpty()) {
+         setError('Tanda tangan Apoteker Penanggung Jawab wajib diisi.');
+         setIsSubmitting(false);
+         return;
+       }
 
-    // Validasi tanda tangan
-    if (sigCanvas.current.isEmpty()) {
-      setError('Tanda tangan Apoteker Penanggung Jawab wajib diisi.');
-      setIsSubmitting(false);
-      return;
-    }
+       try {
+         const token = localStorage.getItem('token');
+         // Periksa apakah getTrimmedCanvas tersedia
+         if (typeof sigCanvas.current.getTrimmedCanvas !== 'function') {
+           throw new Error('getTrimmedCanvas bukan fungsi. Periksa versi react-signature-canvas.');
+         }
+         const tandaTanganDataUrl = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
+         const formData = {
+           nomor_po: infoPemesanan.nomor_po,
+           id_produsen: Number(idProdusen),
+           nama_pbf: infoPemesanan.nama_pbf,
+           alamat_pbf: infoPemesanan.alamat_pbf,
+           nomor_siup: infoPemesanan.nomor_siup,
+           nomor_sia_sika: infoPemesanan.nomor_sia_sika,
+           nama_apoteker: infoPemesanan.nama_apoteker,
+           nomor_sipa: infoPemesanan.nomor_sipa,
+           kontak_telepon: infoPemesanan.kontak_telepon,
+           kontak_email: infoPemesanan.kontak_email,
+           tanggal_pesanan: infoPemesanan.tanggal_pesanan,
+           tujuan_distribusi: infoPemesanan.tujuan_distribusi || null,
+           catatan_khusus: infoPemesanan.catatan_khusus || null,
+           items: detailObat,
+           tanda_tangan_data_url: tandaTanganDataUrl,
+         };
 
-    try {
-      const token = localStorage.getItem('token');
-      const formData = new FormData();
+         const response = await fetch('http://localhost:5000/api/pbf/pesanan', {
+           method: 'POST',
+           headers: {
+             'Authorization': `Bearer ${token}`,
+             'Content-Type': 'application/json',
+           },
+           body: JSON.stringify(formData),
+         });
 
-      // Tambahkan info pemesanan
-      formData.append('infoPemesanan', JSON.stringify({
-        idProdusen: Number(idProdusen),
-        nomorPo: infoPemesanan.nomorPo,
-        namaApotekerPbf: infoPemesanan.namaApotekerPbf,
-        jabatanApotekerPbf: infoPemesanan.jabatanApotekerPbf,
-        nomorSipaPbf: infoPemesanan.nomorSipaPbf,
-        alamatProdusen: infoPemesanan.alamatProdusen,
-        teleponProdusen: infoPemesanan.teleponProdusen,
-        alamatPengiriman: infoPemesanan.alamatPengiriman,
-        metodePembayaran: infoPemesanan.metodePembayaran,
-        totalHarga: infoPemesanan.totalHarga,
-      }));
+         const result = await response.json();
+         if (!response.ok) throw new Error(result.message || 'Gagal membuat pesanan');
 
-      // Tambahkan detail obat
-      formData.append('detailObat', JSON.stringify(
-        detailObat.map((item) => ({
-          idProduksi: Number(item.idProduksi),
-          namaObat: item.namaObat,
-          qty: Number(item.qty),
-          hargaSatuan: Number(item.hargaSatuan),
-          satuan: item.satuan,
-          nomorNie: item.nomorNie,
-          coaPath: item.coaPath,
-          keterangan: item.keterangan,
-        }))
-      ));
-
-      // Tambahkan dokumen
-      formData.append('sikaSipa', dokumen.sikaSipa);
-      formData.append('izinPbf', dokumen.izinPbf);
-      formData.append('npwp', dokumen.npwp);
-      formData.append('aktePerusahaan', dokumen.aktePerusahaan);
-      formData.append('nib', dokumen.nib);
-      detailObat.forEach((item, index) => {
-        if (item.coa) {
-          formData.append(`coa_${index}`, item.coa);
-        }
-      });
-
-      // Tambahkan tanda tangan
-      const tandaTanganDataUrl = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
-      const tandaTanganBlob = await fetch(tandaTanganDataUrl).then((res) => res.blob());
-      formData.append('tandaTangan', tandaTanganBlob, 'tanda_tangan.png');
-
-      const response = await fetch('http://localhost:5000/api/pesanan-pbf', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Gagal membuat pesanan');
-
-      alert('Pesanan berhasil dibuat!');
-      navigate('/pbf/pesan-obat');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+         alert('Pesanan berhasil dibuat!');
+         navigate('/pbf/pesan-obat');
+       } catch (err) {
+         setError(err.message);
+       } finally {
+         setIsSubmitting(false);
+       }
+     };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       <SidebarPbf isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         <NavbarPbf onLogout={() => { localStorage.clear(); navigate('/'); }} />
-        <main className="flex-1 p-6">
+        <main className="flex-1 pt-16 p-6">
           <form onSubmit={handleSubmit} className="space-y-6 max-w-5xl mx-auto">
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold text-gray-800">Buat Pesanan Obat</h1>
-                <p className="text-gray-500 mt-1">Isi detail pesanan dan unggah dokumen sesuai regulasi BPOM/Kemenkes.</p>
+                <p className="text-gray-500 mt-1">Isi detail pesanan sesuai regulasi BPOM/Kemenkes.</p>
               </div>
               <div className="flex gap-4">
                 <button
                   type="button"
-                  onClick={() => navigate('/pbf/pesan-obat/tambah')}
+                  onClick={() => navigate('/pbf/pesan-obat')}
                   className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
                 >
                   Kembali
@@ -330,8 +327,8 @@ const TambahPesanan = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Nomor Purchase Order (PO)</label>
                   <input
-                    name="nomorPo"
-                    value={infoPemesanan.nomorPo}
+                    name="nomor_po"
+                    value={infoPemesanan.nomor_po}
                     onChange={handleInfoChange}
                     placeholder="Masukkan nomor PO"
                     className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
@@ -339,10 +336,54 @@ const TambahPesanan = () => {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-gray-700">Nama PBF</label>
+                  <input
+                    name="nama_pbf"
+                    value={infoPemesanan.nama_pbf}
+                    onChange={handleInfoChange}
+                    placeholder="Masukkan nama PBF"
+                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Alamat PBF</label>
+                  <input
+                    name="alamat_pbf"
+                    value={infoPemesanan.alamat_pbf}
+                    onChange={handleInfoChange}
+                    placeholder="Masukkan alamat PBF"
+                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nomor SIUP/Izin PBF</label>
+                  <input
+                    name="nomor_siup"
+                    value={infoPemesanan.nomor_siup}
+                    onChange={handleInfoChange}
+                    placeholder="Masukkan nomor SIUP"
+                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nomor SIA/SIKA</label>
+                  <input
+                    name="nomor_sia_sika"
+                    value={infoPemesanan.nomor_sia_sika}
+                    onChange={handleInfoChange}
+                    placeholder="Masukkan nomor SIA/SIKA"
+                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700">Nama Apoteker</label>
                   <input
-                    name="namaApotekerPbf"
-                    value={infoPemesanan.namaApotekerPbf}
+                    name="nama_apoteker"
+                    value={infoPemesanan.nama_apoteker}
                     onChange={handleInfoChange}
                     placeholder="Masukkan nama apoteker"
                     className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
@@ -350,21 +391,10 @@ const TambahPesanan = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Jabatan</label>
-                  <input
-                    name="jabatanApotekerPbf"
-                    value={infoPemesanan.jabatanApotekerPbf}
-                    onChange={handleInfoChange}
-                    placeholder="Masukkan jabatan"
-                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
-                    required
-                  />
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-gray-700">Nomor SIPA</label>
                   <input
-                    name="nomorSipaPbf"
-                    value={infoPemesanan.nomorSipaPbf}
+                    name="nomor_sipa"
+                    value={infoPemesanan.nomor_sipa}
                     onChange={handleInfoChange}
                     placeholder="Masukkan nomor SIPA"
                     className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
@@ -372,21 +402,10 @@ const TambahPesanan = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Alamat Produsen</label>
+                  <label className="block text-sm font-medium text-gray-700">Kontak Telepon</label>
                   <input
-                    name="alamatProdusen"
-                    value={infoPemesanan.alamatProdusen}
-                    onChange={handleInfoChange}
-                    placeholder="Masukkan alamat produsen"
-                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Telepon Produsen</label>
-                  <input
-                    name="teleponProdusen"
-                    value={infoPemesanan.teleponProdusen}
+                    name="kontak_telepon"
+                    value={infoPemesanan.kontak_telepon}
                     onChange={handleInfoChange}
                     placeholder="Masukkan nomor telepon"
                     className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
@@ -394,66 +413,48 @@ const TambahPesanan = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Metode Pembayaran</label>
-                  <select
-                    name="metodePembayaran"
-                    value={infoPemesanan.metodePembayaran}
-                    onChange={handleInfoChange}
-                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
-                    required
-                  >
-                    <option value="Transfer Bank">Transfer Bank</option>
-                    <option value="Kredit">Kredit</option>
-                    <option value="Tunai">Tunai</option>
-                  </select>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Alamat Pengiriman</label>
+                  <label className="block text-sm font-medium text-gray-700">Kontak Email</label>
                   <input
-                    name="alamatPengiriman"
-                    value={infoPemesanan.alamatPengiriman}
+                    name="kontak_email"
+                    value={infoPemesanan.kontak_email}
                     onChange={handleInfoChange}
-                    placeholder="Masukkan alamat pengiriman"
+                    placeholder="Masukkan email"
                     className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
                     required
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* Dokumen Legal */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h2 className="text-lg font-semibold text-emerald-700 mb-4">Dokumen Legal</h2>
-              <p className="text-sm text-gray-500 mb-4">Unggah dokumen sesuai regulasi BPOM dan Kemenkes.</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  { name: 'sikaSipa', label: 'SIKA/SIPA' },
-                  { name: 'izinPbf', label: 'Izin PBF' },
-                  { name: 'npwp', label: 'NPWP' },
-                  { name: 'aktePerusahaan', label: 'Akte Perusahaan' },
-                  { name: 'nib', label: 'NIB' },
-                ].map((doc) => (
-                  <div key={doc.name}>
-                    <label className="block text-sm font-medium text-gray-700">{doc.label}</label>
-                    <div className="mt-1 flex items-center gap-2">
-                      <input
-                        type="file"
-                        name={doc.name}
-                        onChange={handleDokumenChange}
-                        accept=".pdf,.png,.jpg"
-                        className="hidden"
-                        id={doc.name}
-                      />
-                      <label
-                        htmlFor={doc.name}
-                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 transition flex items-center gap-2"
-                      >
-                        <Upload size={18} />
-                        {dokumen[doc.name] ? dokumen[doc.name].name : 'Pilih File'}
-                      </label>
-                    </div>
-                  </div>
-                ))}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tanggal Pesanan</label>
+                  <input
+                    name="tanggal_pesanan"
+                    type="date"
+                    value={infoPemesanan.tanggal_pesanan}
+                    onChange={handleInfoChange}
+                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700">Tujuan Distribusi (Opsional)</label>
+                  <input
+                    name="tujuan_distribusi"
+                    value={infoPemesanan.tujuan_distribusi}
+                    onChange={handleInfoChange}
+                    placeholder="Masukkan tujuan distribusi"
+                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700">Catatan Khusus (Opsional)</label>
+                  <textarea
+                    name="catatan_khusus"
+                    value={infoPemesanan.catatan_khusus}
+                    onChange={handleInfoChange}
+                    placeholder="Masukkan catatan khusus"
+                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                    rows="4"
+                  />
+                </div>
               </div>
             </div>
 
@@ -466,38 +467,23 @@ const TambahPesanan = () => {
                     <thead>
                       <tr className="bg-gray-50">
                         <th className="p-3 text-sm font-semibold text-gray-700">Nama Obat</th>
-                        <th className="p-3 text-sm font-semibold text-gray-700">Nomor NIE</th>
+                        <th className="p-3 text-sm font-semibold text-gray-700">Bentuk Sediaan</th>
+                        <th className="p-3 text-sm font-semibold text-gray-700">Dosis</th>
                         <th className="p-3 text-sm font-semibold text-gray-700">Jumlah</th>
                         <th className="p-3 text-sm font-semibold text-gray-700">Harga Satuan</th>
                         <th className="p-3 text-sm font-semibold text-gray-700">Total</th>
-                        <th className="p-3 text-sm font-semibold text-gray-700">COA</th>
                         <th className="p-3 text-sm font-semibold text-gray-700">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       {detailObat.map((item, index) => (
                         <tr key={index} className="border-t">
-                          <td className="p-3 text-gray-800">{item.namaObat}</td>
-                          <td className="p-3 text-gray-800">{item.nomorNie}</td>
-                          <td className="p-3 text-gray-800">
-                            {item.qty} {item.satuan}
-                          </td>
-                          <td className="p-3 text-gray-800">Rp {Number(item.hargaSatuan).toLocaleString('id-ID')}</td>
-                          <td className="p-3 text-gray-800 font-semibold">
-                            Rp {(item.qty * item.hargaSatuan).toLocaleString('id-ID')}
-                          </td>
-                          <td className="p-3 text-gray-800">
-                            {item.coa ? item.coa.name : item.coaPath ? (
-                              <a
-                                href={`http://localhost:5000/${item.coaPath}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-500 hover:underline flex items-center gap-1"
-                              >
-                                <FileText size={16} /> Lihat COA
-                              </a>
-                            ) : '-'}
-                          </td>
+                          <td className="p-3 text-gray-800">{item.nama_obat}</td>
+                          <td className="p-3 text-gray-800">{item.bentuk_sediaan}</td>
+                          <td className="p-3 text-gray-800">{item.dosis || '-'}</td>
+                          <td className="p-3 text-gray-800">{item.jumlah_pesanan}</td>
+                          <td className="p-3 text-gray-800">Rp {Number(item.harga_per_unit).toLocaleString('id-ID')}</td>
+                          <td className="p-3 text-gray-800 font-semibold">Rp {Number(item.total_harga).toLocaleString('id-ID')}</td>
                           <td className="p-3">
                             <button
                               type="button"
@@ -512,9 +498,9 @@ const TambahPesanan = () => {
                     </tbody>
                     <tfoot>
                       <tr className="bg-gray-50 font-semibold">
-                        <td colSpan="4" className="p-3 text-right">Total Harga:</td>
-                        <td className="p-3">Rp {infoPemesanan.totalHarga.toLocaleString('id-ID')}</td>
-                        <td colSpan="2" className="p-3"></td>
+                        <td colSpan="5" className="p-3 text-right">Total Harga:</td>
+                        <td className="p-3">Rp {infoPemesanan.total_harga.toLocaleString('id-ID')}</td>
+                        <td className="p-3"></td>
                       </tr>
                     </tfoot>
                   </table>
@@ -526,7 +512,7 @@ const TambahPesanan = () => {
                   <label className="block text-sm font-medium text-gray-700">Pilih Obat</label>
                   <select
                     onChange={handleItemSelect}
-                    value={itemObat.idProduksi}
+                    value={itemObat.id_produksi}
                     className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
                   >
                     <option value="">-- Pilih Obat --</option>
@@ -535,94 +521,34 @@ const TambahPesanan = () => {
                     ) : (
                       stokObat.map((o) => (
                         <option key={o.id} value={o.id}>
-                          {o.nama_obat} (Stok: {o.jumlah} {o.satuan || 'Box'})
+                          {o.nama_obat} (Stok: {o.jumlah}, {o.bentuk_sediaan})
                         </option>
                       ))
                     )}
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Nomor Izin Edar (NIE)</label>
-                  <input
-                    name="nomorNie"
-                    value={itemObat.nomorNie}
-                    onChange={handleItemChange}
-                    placeholder="Masukkan NIE"
-                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
-                    required
-                  />
-                </div>
-                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700">Jumlah</label>
                   <input
-                    name="qty"
+                    name="jumlah_pesanan"
                     type="number"
                     min="1"
-                    value={itemObat.qty}
+                    value={itemObat.jumlah_pesanan}
                     onChange={handleItemChange}
-                    placeholder="Qty"
+                    placeholder="Jumlah"
                     className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
                   />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700">Harga Satuan</label>
                   <input
-                    name="hargaSatuan"
+                    name="harga_per_unit"
                     type="number"
-                    value={itemObat.hargaSatuan}
+                    value={itemObat.harga_per_unit}
                     onChange={handleItemChange}
-                    placeholder="Masukkan harga satuan"
+                    placeholder="Harga satuan"
                     className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
                   />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Satuan</label>
-                  <select
-                    name="satuan"
-                    value={itemObat.satuan}
-                    onChange={handleItemChange}
-                    className="mt-1 w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
-                  >
-                    <option value="Box">Box</option>
-                    <option value="Tablet">Tablet</option>
-                    <option value="Kapsul">Kapsul</option>
-                    <option value="Botol">Botol</option>
-                    <option value="Ampul">Ampul</option>
-                    <option value="Vial">Vial</option>
-                  </select>
-                </div>
-                <div className="md:col-span-3">
-                  <label className="block text-sm font-medium text-gray-700">Certificate of Analysis (COA, Opsional)</label>
-                  <div className="mt-1 flex items-center gap-2">
-                    {itemObat.coaPath ? (
-                      <a
-                        href={`http://localhost:5000/${itemObat.coaPath}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline flex items-center gap-1"
-                      >
-                        <FileText size={16} /> Lihat COA
-                      </a>
-                    ) : (
-                      <>
-                        <input
-                          type="file"
-                          name="coa"
-                          onChange={handleCoaChange}
-                          accept=".pdf,.png,.jpg"
-                          className="hidden"
-                          id="coa"
-                        />
-                        <label
-                          htmlFor="coa"
-                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 transition flex items-center gap-2"
-                        >
-                          <Upload size={18} />
-                          {itemObat.coa ? itemObat.coa.name : 'Pilih File'}
-                        </label>
-                      </>
-                    )}
-                  </div>
                 </div>
                 <div className="md:col-span-2">
                   <button

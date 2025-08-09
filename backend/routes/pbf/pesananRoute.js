@@ -6,6 +6,7 @@ const { authenticateToken, authorizeRole } = require('../../middleware/auth');
 router.use(authenticateToken, authorizeRole('pbf'));
 
 router.get('/', pesananController.getAll);
-router.post('/', pesananController.create); // <-- RUTE BARU
+router.get('/:id', pesananController.getById); // Rute baru untuk detail pesanan
+router.post('/', pesananController.create);
 
 module.exports = router;

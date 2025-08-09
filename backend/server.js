@@ -20,7 +20,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Gunakan semua rute
 app.use('/api/auth', authRoutes);
 app.use('/api/produksi', produksiRoutes);
-app.use('/api/pesanan-pbf', pesananPbfRoutes);
+app.use('/api/pbf/pesanan', pesananPbfRoutes);
 app.use('/api/pbf', pbfRoutes);
 app.use('/api/blockchain', blockchainRoutes);
 

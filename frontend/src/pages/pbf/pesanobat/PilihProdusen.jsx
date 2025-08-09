@@ -36,7 +36,6 @@ const PilihProdusen = () => {
   }, [navigate]);
 
   const handleProdusenSelect = (produsenId) => {
-    // Navigasi ke halaman form pesanan dengan membawa ID produsen
     navigate(`/pbf/pesan-obat/tambah/${produsenId}`);
   };
 

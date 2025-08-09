@@ -19,6 +19,7 @@ import PbfDashboard from './pages/pbf/PbfDashboard';
 import PesanObat from './pages/pbf/pesanobat/PesanObat';
 import PilihProdusen from './pages/pbf/pesanobat/PilihProdusen';
 import TambahPesanan from './pages/pbf/pesanobat/TambahPesanan';
+import DetailPesanan from './pages/pbf/pesanobat/DetailPesanan';
 
 
 import ApotekDashboard from './pages/apotek/ApotekDashboard';
@@ -47,8 +48,9 @@ function App() {
       
       <Route path="/pbf/dashboard" element={<PbfDashboard />} />
       <Route path="/pbf/pesan-obat" element={<PesanObat />} />
-      <Route path="/pbf/pesan-obat/tambah" element={<PilihProdusen />} /> {/* <-- Rute Baru */}
-      <Route path="/pbf/pesan-obat/tambah/:idProdusen" element={<TambahPesanan />} /> {/* <-- Rute Diperbarui */}
+      <Route path="/pbf/pesan-obat/tambah" element={<PilihProdusen />} /> 
+      <Route path="/pbf/pesan-obat/tambah/:idProdusen" element={<TambahPesanan />} /> 
+      <Route path="/pbf/pesanan/:id/detail" element={<DetailPesanan />} />
       
 
 

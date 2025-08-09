@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import SidebarPbf from '../../../components/SidebarPbf';
 import NavbarPbf from '../../../components/NavbarPbf';
-import { Search, Calendar, ChevronDown } from 'lucide-react';
+import { Search, Calendar } from 'lucide-react';
+import axios from 'axios';
 
 const PesanObat = () => {
   const navigate = useNavigate();
@@ -20,16 +21,13 @@ const PesanObat = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('Silakan login terlebih dahulu');
-  
-        const response = await fetch('http://localhost:5000/api/pesanan-pbf', {
-          headers: { 'Authorization': `Bearer ${token}` },
+
+        const response = await axios.get('http://localhost:5000/api/pbf/pesanan', {
+          headers: { Authorization: `Bearer ${token}` },
         });
-  
-        if (!response.ok) throw new Error('Gagal mengambil data pesanan');
-  
-        const result = await response.json();
-        if (!result.success) throw new Error(result.message);
-        setPesananData(result.data || []);
+
+        if (!response.data.success) throw new Error(response.data.message || 'Gagal mengambil data pesanan');
+        setPesananData(response.data.data || []);
       } catch (error) {
         setError(error.message);
         if (error.message.includes('login')) navigate('/login/pbf');
@@ -49,105 +47,156 @@ const PesanObat = () => {
     return pesananData
       .filter(item => {
         if (statusFilter === 'Semua Status') return true;
-        return item.status_pesanan === statusFilter;
+        return item.status === statusFilter;
       })
       .filter(item =>
-        item.id.toString().includes(searchTerm) ||
-        item.nama_produsen.toLowerCase().includes(searchTerm.toLowerCase())
+        (item.nomor_po?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (item.nama_pbf?.toLowerCase() || '').includes(searchTerm.toLowerCase())
       );
   }, [pesananData, searchTerm, statusFilter]);
-  
+
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'Menunggu': return 'bg-yellow-100 text-yellow-800';
-      case 'Diterima': return 'bg-green-100 text-green-800';
-      case 'Dikirim': return 'bg-blue-100 text-blue-800';
+      case 'Dipesan': return 'bg-yellow-100 text-yellow-800';
       case 'Diproses': return 'bg-purple-100 text-purple-800';
+      case 'Dikirim': return 'bg-blue-100 text-blue-800';
+      case 'Diterima': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-100">
       <SidebarPbf isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         <NavbarPbf onLogout={handleLogout} />
-        <main className="pt-16 p-6">
+        <main className="flex-1 pt-16 p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
-                <h1 className="text-2xl font-bold">Pesanan Obat ke Produsen</h1>
-                <p className="text-gray-500">Pilih obat yang akan dipesan</p>
+              <h1 className="text-3xl font-bold text-gray-800">Pesanan Obat ke Produsen</h1>
+              <p className="text-gray-500 mt-1">Kelola dan lacak pesanan obat Anda</p>
             </div>
-            <button onClick={() => navigate('/pbf/pesan-obat/tambah')} className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded flex items-center gap-2">
-              <span className="font-semibold">+</span> Pesan Obat
+            <button
+              onClick={() => navigate('/pbf/pesan-obat/pilih-produsen')}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg flex items-center gap-2 transition"
+            >
+              <span className="font-semibold">+</span> Buat Pesanan Baru
             </button>
           </div>
 
-          {error && <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>}
+          {error && (
+            <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg flex items-center gap-2">
+              <span>{error}</span>
+            </div>
+          )}
 
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="p-4 border-b">
-                <h2 className="text-lg font-semibold mb-4">Lihat Pesanan obat Anda</h2>
-                <div className="flex items-center gap-4">
-                    <div className="relative flex-grow">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input type="text" className="w-full pl-10 pr-4 py-2 border rounded-lg" placeholder="Cari ID Pesanan atau nama Produsen..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    </div>
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="p-2 border rounded-lg">
-                        <option>Semua Status</option>
-                        <option>Menunggu</option>
-                        <option>Diproses</option>
-                        <option>Dikirim</option>
-                    </select>
-                    <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input type="text" className="w-full pl-10 pr-4 py-2 border rounded-lg" placeholder="Waktu Pesan"/>
-                    </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-emerald-700 mb-4">Daftar Pesanan Obat</h2>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="relative flex-grow">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="Cari Nomor PO atau Nama PBF..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  <option>Semua Status</option>
+                  <option>Dipesan</option>
+                  <option>Diproses</option>
+                  <option>Dikirim</option>
+                  <option>Diterima</option>
+                </select>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                    placeholder="Filter Tanggal (Segera Hadir)"
+                    disabled
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
-              {isLoading ? <p className="p-4 text-center">Loading...</p> : (
+              {isLoading ? (
+                <div className="p-6 text-center text-gray-500">
+                  <p>Memuat pesanan...</p>
+                </div>
+              ) : (
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Pesanan</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pesanan</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alamat Pengiriman</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Pesanan</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor PO</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PBF</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alamat Pengiriman</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pesanan</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredData.length > 0 ? filteredData.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {item.nama_produsen}
-                            <div className="text-xs text-gray-400">ID Pesanan : {String(item.id).padStart(6, '0')}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <Link to={`/pbf/pesanan/${item.id}/surat`} className="text-blue-600 hover:underline">Lihat Surat Pesanan</Link>
-                            <div className="text-xs text-gray-400">Rp. {item.total_harga.toLocaleString('id-ID')}</div>
-                            <div className="text-xs text-gray-400">Via: {item.metode_pembayaran}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.alamat_pengiriman}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(item.tanggal_pesan).toLocaleDateString('id-ID')}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(item.status_pesanan)}`}>
-                            {item.status_pesanan}
-                           </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:underline">
-                          <Link to={`/pbf/pesanan/${item.id}/lacak`}>Lacak pengiriman</Link>
+                    {filteredData.length > 0 ? (
+                      filteredData.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {item.nomor_po}
+                            <div className="text-xs text-gray-400">ID: {String(item.id).padStart(6, '0')}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {item.nama_pbf}
+                            <div className="text-xs text-gray-400">Rp. {(item.total_harga || 0).toLocaleString('id-ID')}</div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500">{item.alamat_pbf}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {formatDate(item.tanggal_pesanan)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(item.status)}`}
+                            >
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex gap-4">
+                              {/* --- PERBAIKAN DI SINI --- */}
+                              <Link to={`/pbf/pesanan/${item.id}/detail`} className="text-blue-600 hover:text-blue-800">
+                                Detail
+                              </Link>
+                              <Link to={`/pbf/pesanan/${item.id}/lacak`} className="text-blue-600 hover:text-blue-800">
+                                Lacak
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="text-center py-10 text-gray-500">
+                          {searchTerm || statusFilter !== 'Semua Status'
+                            ? 'Tidak ada pesanan yang sesuai dengan filter.'
+                            : 'Anda belum memiliki pesanan.'}
                         </td>
                       </tr>
-                    )) : (
-                        <tr>
-                            <td colSpan="6" className="text-center py-10 text-gray-500">
-                                {searchTerm || statusFilter !== 'Semua Status' ? "Tidak ada pesanan yang sesuai dengan filter." : "Anda belum memiliki pesanan."}
-                            </td>
-                        </tr>
                     )}
                   </tbody>
                 </table>
@@ -159,4 +208,5 @@ const PesanObat = () => {
     </div>
   );
 };
+
 export default PesanObat;
